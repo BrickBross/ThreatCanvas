@@ -231,26 +231,24 @@ const buildThreatMatcherFromPrompts = () => {
   st.setUiTab("threats");
 });
 
+    push("act-bulk-status-fw", "Bulk: set threat status", "By framework — prompts", "", () => {
+      const fw = (prompt("Framework to target: STRIDE | OWASP_WEB | OWASP_API | MITRE_TACTICS | CIA") || "").trim();
       const stt = (prompt("New status: open, in_analysis, mitigated, accepted, verified, rejected") || "").trim();
       if (!fw || !stt) return;
+
       const st = useTMStore.getState();
       st.commitHistory();
+
       for (const t of (st.model.threats || []) as any[]) {
         const f = (t.framework === "STRIDE") ? "STRIDE" : (t.framework || "");
-        const id = f.startsWith("OWASP Top 10") ? "OWASP_WEB" : f.startsWith("OWASP API Top 10") ? "OWASP_API" : f.startsWith("MITRE ATT&CK") ? "MITRE_TACTICS" : f.startsWith("CIA") ? "CIA" : f;
+        const id =
+          f.startsWith("OWASP Top 10") ? "OWASP_WEB"
+          : f.startsWith("OWASP API Top 10") ? "OWASP_API"
+          : f.startsWith("MITRE ATT&CK") ? "MITRE_TACTICS"
+          : f.startsWith("CIA") ? "CIA"
+          : f;
+
         if (id === fw) st.updateThreat(t.id, { status: stt as any });
-      }
-    });
-    push("act-bulk-owner", "Bulk: set threat owner", "By framework — prompts", "", () => {
-      const fw = (prompt("Framework to target: STRIDE | OWASP_WEB | OWASP_API | MITRE_TACTICS | CIA") || "").trim();
-      const owner = (prompt("Owner value:") || "");
-      if (!fw) return;
-      const st = useTMStore.getState();
-      st.commitHistory();
-      for (const t of (st.model.threats || []) as any[]) {
-        const f = (t.framework === "STRIDE") ? "STRIDE" : (t.framework || "");
-        const id = f.startsWith("OWASP Top 10") ? "OWASP_WEB" : f.startsWith("OWASP API Top 10") ? "OWASP_API" : f.startsWith("MITRE ATT&CK") ? "MITRE_TACTICS" : f.startsWith("CIA") ? "CIA" : f;
-        if (id === fw) st.updateThreat(t.id, { owner });
       }
     });
     push("act-bulk-li", "Bulk: set likelihood/impact", "By framework — prompts", "", () => {
