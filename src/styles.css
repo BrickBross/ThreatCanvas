@@ -1,0 +1,141 @@
+:root{
+  --bg: #ffffff;
+  --fg: #111111;
+  --muted: #666666;
+  --card: #ffffff;
+  --border: #eeeeee;
+  --border2: #dddddd;
+  --hover: #fafafa;
+  --btnBg: #ffffff;
+  --btnFg: #111111;
+  --btnBorder: #dddddd;
+  --primaryBg: #111111;
+  --primaryFg: #ffffff;
+  --canvasBg: #ffffff;
+}
+.themeLight{ color: var(--fg); background: var(--bg); }
+.themeDark{
+  --bg: #0b0d10;
+  --fg: #e8eaed;
+  --muted: #a0a4ab;
+  --card: #0f1217;
+  --border: #1f242c;
+  --border2: #2a313b;
+  --hover: #141a22;
+  --btnBg: #0f1217;
+  --btnFg: #e8eaed;
+  --btnBorder: #2a313b;
+  --primaryBg: #e8eaed;
+  --primaryFg: #0b0d10;
+  --canvasBg: #0b0d10;
+}
+
+.iconBubble{width:26px;height:26px;border:1px solid #e5e5e5;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111}
+.iconBubble svg{width:16px;height:16px}
+
+/* Dark mode overrides / variable-driven UI */
+.btn {
+  padding: 8px 10px;
+  border: 1px solid var(--btnBorder);
+  background: var(--btnBg);
+  color: var(--btnFg);
+  border-radius: 10px;
+  cursor: pointer;
+}
+.btn:hover { background: var(--hover); }
+
+.btnPrimary {
+  padding: 8px 10px;
+  border: 1px solid var(--primaryBg);
+  background: var(--primaryBg);
+  color: var(--primaryFg);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.input, .select, textarea.input {
+  border: 1px solid var(--border2);
+  background: var(--btnBg);
+  color: var(--fg);
+}
+
+.card {
+  background: var(--card);
+  border-color: var(--border);
+}
+
+.sidebar { border-right-color: var(--border); }
+.rightbar { border-left-color: var(--border); }
+
+.item:hover { background: var(--hover); }
+
+.iconBubble {
+  border-color: var(--border2);
+  background: var(--btnBg);
+  color: var(--fg);
+}
+
+.themeDark .reactflowWrap { background: var(--canvasBg); }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+
+/* Modal */
+.modalBackdrop{
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35);
+  display:flex; align-items:center; justify-content:center;
+  z-index: 9999;
+}
+.modal{
+  width: min(720px, 92vw);
+  max-height: 86vh;
+  overflow:auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+}
+
+/* Context menu */
+.ctxBackdrop{ position: fixed; inset: 0; z-index: 9998; }
+.ctxMenu{
+  position: fixed;
+  min-width: 220px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+}
+.ctxItem{
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fg);
+  cursor: pointer;
+}
+.ctxItem:hover{ background: var(--hover); }
+.ctxItem:disabled{ opacity: 0.5; cursor: not-allowed; }
+
+.brand{padding:10px 10px 0 10px}
+.brandTitle{font-size:16px;font-weight:800;letter-spacing:0.2px}
+
+
+/* UX Phase 12 */
+.heatmap{display:flex;flex-direction:column;gap:6px}
+.heatmapRow{display:flex;gap:6px}
+.heatCell{border:1px solid var(--border);border-radius:10px;padding:8px;min-width:76px;min-height:56px;cursor:pointer;text-align:left}
+.heatCell .tiny{font-size:11px}
+.heatCell.h1{background:rgba(46, 204, 113, 0.12)}
+.heatCell.h2{background:rgba(241, 196, 15, 0.14)}
+.heatCell.h3{background:rgba(243, 156, 18, 0.16)}
+.heatCell.h4{background:rgba(231, 76, 60, 0.14)}
+.heatCell.h5{background:rgba(192, 57, 43, 0.18)}
+.heatSel{outline:2px solid var(--accent);}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border-bottom:1px solid var(--border);padding:8px;text-align:left}
