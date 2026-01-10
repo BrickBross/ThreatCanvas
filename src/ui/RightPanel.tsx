@@ -675,7 +675,6 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               </select>
               <button className="btn" onClick={() => setCollapsedGroups({})}>Expand all</button>
             </div>
-</div>
 
           <div className="list">
             {Object.entries(groupedThreats).map(([gk, items]) => {
@@ -940,103 +939,7 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
       ) : null}
     </div>
   );
-})}
-
-                    </select>
-                  </div>
-                  <div>
-                    <label className="small muted">Owner</label>
-                    <input className="input" value={t.owner || ""} onChange={(e) => updateThreat(t.id, { owner: e.target.value })} />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="small muted">Title</label>
-                  <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
-                </div>
-                <div>
-                  <label className="small muted">Description</label>
-                  <textarea
-                    className="input"
-                    rows={3}
-                    value={t.description || ""}
-                    onChange={(e) => updateThreat(t.id, { description: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label className="small muted">Mitigation</label>
-                  <textarea
-                    className="input"
-                    rows={2}
-                    value={t.mitigation || ""}
-                    onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })}
-                  />
-                </div>
-
-                <div className="hr" />
-
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <b>Evidence</b>
-                  <button
-                    className="btn"
-                    onClick={() =>
-                      addEvidenceToThreat(t.id, {
-                        author: "",
-                        note: prompt("Evidence note:") || "",
-                        links: [],
-                        status: "draft" as EvidenceStatus
-                      } as any)
-                    }
-                  >
-                    Add note
-                  </button>
-                </div>
-
-                {(t.commentary || []).length ? (
-                  <div className="list">
-                    {(t.commentary || []).map((ev: any) => (
-                      <div key={ev.id} className="item">
-                        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                          <div className="small muted">
-                            {ev.createdAt} {ev.author ? "• " + ev.author : ""}
-                          </div>
-                          <select
-                            className="select"
-                            style={{ maxWidth: 160 }}
-                            value={(ev.status || "draft") as EvidenceStatus}
-                            onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as EvidenceStatus })}
-                          >
-                            {EVIDENCE_STATUSES.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>{ev.note}</div>
-                        {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" • ")}</div> : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="small muted">No evidence yet.</div>
-                )}
-
-                <div className="hr" />
-
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <b>Linked findings</b>
-                  <button className="btn" onClick={() => setTab("findings")}>
-                    Go to findings
-                  </button>
-                </div>
-
-                <div className="small muted">
-                  Link findings to show mitigation work or audit evidence against this threat.
-                </div>
-              </div>
-            ))}
-          </div>
+  })}
         </>
       )}
 
