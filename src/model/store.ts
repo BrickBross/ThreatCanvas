@@ -41,72 +41,29 @@ type Store = {
   uiTab: "properties" | "threats" | "findings" | "validation" | "help";
   setUiTab: (t: any) => void;
   frameworkSelections: string[];
-  setFrameworkSelections: (ids) => set(() => { localStorage.setItem("tm_frameworks", JSON.stringify(ids)); return { frameworkSelections: ids }; }),
+  setFrameworkSelections: (ids: string[]) => void;
   frameworkWeights: Record<string, { likelihood: number; impact: number }>;
   setFrameworkWeight: (id: string, patch: { likelihood?: number; impact?: number }) => void;
   generateGapsOnly: boolean;
-  setGenerateGapsOnly: (v) => set(() => { localStorage.setItem("tm_generate_gaps_only", JSON.stringify(v)); return { generateGapsOnly: v }; }),
-  setGenerateScope: (v) => set(() => { localStorage.setItem("tm_generate_scope", JSON.stringify(v)); return { generateScope: v }; }),
-  setHasOnboarded: (v) => set(() => { localStorage.setItem("tm_onboarded", JSON.stringify(v)); return { hasOnboarded: v }; }),
+  generateScope: any;
+  setGenerateGapsOnly: (v: boolean) => void;
+  setGenerateScope: (v: any) => void;
+  hasOnboarded: boolean;
+  setHasOnboarded: (v: boolean) => void;
+  uiThreatGroupBy: any;
+  setUiThreatGroupBy: (v: any) => void;
   threatFrameworkFilter: string[];
-  setThreatFrameworkFilter: (ids) => set(() => { localStorage.setItem("tm_threat_framework_filter", JSON.stringify(ids)); return { threatFrameworkFilter: ids }; }),
-  setThreatStatusFilter: (ids) => set(() => { localStorage.setItem("tm_threat_status_filter", JSON.stringify(ids)); return { threatStatusFilter: ids }; }),
-  setThreatEvidenceFilter: (v) => set(() => { localStorage.setItem("tm_threat_evidence_filter", JSON.stringify(v)); return { threatEvidenceFilter: v }; }),
-  setThreatRiskCell: (v) => set(() => { localStorage.setItem("tm_threat_risk_cell", JSON.stringify(v)); return { threatRiskCell: v }; }),
-  setPresentationMode: (v) => set(() => { localStorage.setItem("tm_presentation_mode", JSON.stringify(v)); return { presentationMode: v }; }),
-  saveView: (name) => {
-    const s = get() as any;
-    const view = {
-      id: nanoid(),
-      name,
-      tab: s.uiTab || "threats",
-      groupBy: s.uiThreatGroupBy,
-      frameworks: s.threatFrameworkFilter || [],
-      statuses: s.threatStatusFilter || [],
-      evidence: s.threatEvidenceFilter || "any",
-      risk: s.threatRiskCell || null,
-    };
-    const next = [...(s.savedViews || []), view];
-    localStorage.setItem("tm_saved_views", JSON.stringify(next));
-    set({ savedViews: next });
-  },
-  applyView: (id) => {
-    const s = get() as any;
-    const v = (s.savedViews || []).find((x:any)=> x.id === id);
-    if (!v) return;
-    if (v.frameworks) s.setThreatFrameworkFilter(v.frameworks);
-    if (v.statuses) s.setThreatStatusFilter(v.statuses);
-    if (v.evidence) s.setThreatEvidenceFilter(v.evidence);
-    s.setThreatRiskCell(v.risk || null);
-    if (v.groupBy) s.setUiThreatGroupBy(v.groupBy);
-    if (v.tab) s.setUiTab(v.tab);
-  },
-  deleteView: (id) => {
-    const s = get() as any;
-    const next = (s.savedViews || []).filter((x:any)=> x.id !== id);
-    localStorage.setItem("tm_saved_views", JSON.stringify(next));
-    set({ savedViews: next });
-  },
-  saveThreatFilter: (name) => set((s) => {
-    const id = `flt_${Date.now().toString(36)}`;
-    const entry = { id, name, frameworks: s.threatFrameworkFilter || [], statuses: (s as any).threatStatusFilter || [], evidence: (s as any).threatEvidenceFilter || "any" };
-    const next = [...((s as any).savedThreatFilters || []), entry];
-    localStorage.setItem("tm_saved_threat_filters", JSON.stringify(next));
-    return { savedThreatFilters: next } as any;
-  }),
-  applyThreatFilter: (id) => set((s) => {
-    const e = ((s as any).savedThreatFilters || []).find((x:any)=> x.id === id);
-    if (!e) return {} as any;
-    localStorage.setItem("tm_threat_framework_filter", JSON.stringify(e.frameworks || []));
-    localStorage.setItem("tm_threat_status_filter", JSON.stringify(e.statuses || []));
-    localStorage.setItem("tm_threat_evidence_filter", JSON.stringify(e.evidence || "any"));
-    return { threatFrameworkFilter: e.frameworks || [], threatStatusFilter: e.statuses || [], threatEvidenceFilter: e.evidence || "any" } as any;
-  }),
-  deleteThreatFilter: (id) => set((s) => {
-    const next = ((s as any).savedThreatFilters || []).filter((x:any)=> x.id !== id);
-    localStorage.setItem("tm_saved_threat_filters", JSON.stringify(next));
-    return { savedThreatFilters: next } as any;
-  }),
+  setThreatFrameworkFilter: (ids: string[]) => void;
+  setThreatStatusFilter: (ids: string[]) => void;
+  setThreatEvidenceFilter: (v: any) => void;
+  setThreatRiskCell: (v: any) => void;
+  setPresentationMode: (v: boolean) => void;
+  saveView: (name: string) => void;
+  applyView: (id: string) => void;
+  deleteView: (id: string) => void;
+  saveThreatFilter: (name: string) => void;
+  applyThreatFilter: (id: string) => void;
+  deleteThreatFilter: (id: string) => void;
   isDirty: boolean;
   lastFileName: string | null;
   markClean: () => void;
@@ -170,8 +127,9 @@ type Store = {
 };
 
 function emptyModel(name = "New threat model"): TMModel {
+  const modelId = nanoid();
   return {
-    id,
+    id: modelId,
     name,
     updatedAt: new Date().toISOString(),
     nodes: [],
@@ -180,7 +138,7 @@ function emptyModel(name = "New threat model"): TMModel {
     findings: [],
     threatLibrary: [
       {
-        id,
+        id: nanoid(),
         stride: "I",
         title: "Sensitive data exposure",
         description: "Sensitive data may be disclosed via logs, transit, storage, or misconfiguration.",
@@ -189,7 +147,7 @@ function emptyModel(name = "New threat model"): TMModel {
         suggestedMitigation: "Encrypt, least privilege, minimize logging, secrets management."
       },
       {
-        id,
+        id: nanoid(),
         stride: "S",
         title: "Spoofing / weak auth",
         description: "Entity may be impersonated or authentication may be weak/misused.",
@@ -198,7 +156,7 @@ function emptyModel(name = "New threat model"): TMModel {
         suggestedMitigation: "mTLS/OAuth best practices, token hardening, strong identity verification."
       },
       {
-        id,
+        id: nanoid(),
         stride: "D",
         title: "Denial of Service",
         description: "Service may be exhausted by excessive requests or expensive operations.",
@@ -249,8 +207,6 @@ export const useTMStore = create<Store>((set, get) => ({
   canUndo: () => get().past.length > 0,
   canRedo: () => get().future.length > 0,
 
-  const MAX_HISTORY = 30;
-
   commitHistory: () => {
     const { model, past } = get();
     set({ past: [...past, cloneModel(model)].slice(-50), future: [] });
@@ -274,6 +230,8 @@ export const useTMStore = create<Store>((set, get) => ({
   selectedEdgeId: null,
   uiTab: (localStorage.getItem("tm_ui_tab") as any) || "properties",
   setUiTab: (t) => set(() => { localStorage.setItem("tm_ui_tab", t); return { uiTab: t }; }),
+  uiThreatGroupBy: (localStorage.getItem("tm_threat_group_by") as any) || "framework",
+  setUiThreatGroupBy: (v) => set(() => { localStorage.setItem("tm_threat_group_by", v); return { uiThreatGroupBy: v }; }),
   frameworkSelections: JSON.parse(localStorage.getItem("tm_frameworks") || "[\"STRIDE\"]"),
   frameworkWeights: JSON.parse(localStorage.getItem("tm_framework_weights") || "{}"),
   setFrameworkWeight: (id, patch) => set((s) => {
@@ -377,90 +335,7 @@ deleteNode: (id) => set((s) => {
 
 deleteEdge: (id) => set((s) => {
   const edges = (s.model.edges || []).filter((e: any) => e.id !== id);
-  return { model: { ...s.model, edges }, selectedEdgeId: null,
-  uiTab: (localStorage.getItem("tm_ui_tab") as any) || "properties",
-  setUiTab: (t) => set(() => { localStorage.setItem("tm_ui_tab", t); return { uiTab: t }; }),
-  frameworkSelections: JSON.parse(localStorage.getItem("tm_frameworks") || "[\"STRIDE\"]"),
-  frameworkWeights: JSON.parse(localStorage.getItem("tm_framework_weights") || "{}"),
-  setFrameworkWeight: (id, patch) => set((s) => {
-    const next = { ...(s.frameworkWeights || {}) };
-    const cur = next[id] || { likelihood: 3, impact: 3 };
-    next[id] = { ...cur, ...patch };
-    localStorage.setItem("tm_framework_weights", JSON.stringify(next));
-    return { frameworkWeights: next };
-  }),
-  generateGapsOnly: JSON.parse(localStorage.getItem("tm_generate_gaps_only") || "true"),
-  generateScope: (JSON.parse(localStorage.getItem("tm_generate_scope") || "\"selection\"") as any) || "selection",
-  hasOnboarded: JSON.parse(localStorage.getItem("tm_onboarded") || "false"),
-  setGenerateGapsOnly: (v) => set(() => { localStorage.setItem("tm_generate_gaps_only", JSON.stringify(v)); return { generateGapsOnly: v }; }),
-  setGenerateScope: (v) => set(() => { localStorage.setItem("tm_generate_scope", JSON.stringify(v)); return { generateScope: v }; }),
-  setHasOnboarded: (v) => set(() => { localStorage.setItem("tm_onboarded", JSON.stringify(v)); return { hasOnboarded: v }; }),
-  threatFrameworkFilter: JSON.parse(localStorage.getItem("tm_threat_framework_filter") || "[]"),
-  threatStatusFilter: JSON.parse(localStorage.getItem("tm_threat_status_filter") || "[]"),
-  threatEvidenceFilter: (JSON.parse(localStorage.getItem("tm_threat_evidence_filter") || "\"any\"") as any) || "any",
-  threatRiskCell: JSON.parse(localStorage.getItem("tm_threat_risk_cell") || "null"),
-  savedViews: JSON.parse(localStorage.getItem("tm_saved_views") || "[]"),
-  presentationMode: JSON.parse(localStorage.getItem("tm_presentation_mode") || "false"),
-  savedThreatFilters: JSON.parse(localStorage.getItem("tm_saved_threat_filters") || "[]"),
-  setThreatFrameworkFilter: (ids) => set(() => { localStorage.setItem("tm_threat_framework_filter", JSON.stringify(ids)); return { threatFrameworkFilter: ids }; }),
-  setThreatStatusFilter: (ids) => set(() => { localStorage.setItem("tm_threat_status_filter", JSON.stringify(ids)); return { threatStatusFilter: ids }; }),
-  setThreatEvidenceFilter: (v) => set(() => { localStorage.setItem("tm_threat_evidence_filter", JSON.stringify(v)); return { threatEvidenceFilter: v }; }),
-  setThreatRiskCell: (v) => set(() => { localStorage.setItem("tm_threat_risk_cell", JSON.stringify(v)); return { threatRiskCell: v }; }),
-  setPresentationMode: (v) => set(() => { localStorage.setItem("tm_presentation_mode", JSON.stringify(v)); return { presentationMode: v }; }),
-  saveView: (name) => {
-    const s = get() as any;
-    const view = {
-      id: nanoid(),
-      name,
-      tab: s.uiTab || "threats",
-      groupBy: s.uiThreatGroupBy,
-      frameworks: s.threatFrameworkFilter || [],
-      statuses: s.threatStatusFilter || [],
-      evidence: s.threatEvidenceFilter || "any",
-      risk: s.threatRiskCell || null,
-    };
-    const next = [...(s.savedViews || []), view];
-    localStorage.setItem("tm_saved_views", JSON.stringify(next));
-    set({ savedViews: next });
-  },
-  applyView: (id) => {
-    const s = get() as any;
-    const v = (s.savedViews || []).find((x:any)=> x.id === id);
-    if (!v) return;
-    if (v.frameworks) s.setThreatFrameworkFilter(v.frameworks);
-    if (v.statuses) s.setThreatStatusFilter(v.statuses);
-    if (v.evidence) s.setThreatEvidenceFilter(v.evidence);
-    s.setThreatRiskCell(v.risk || null);
-    if (v.groupBy) s.setUiThreatGroupBy(v.groupBy);
-    if (v.tab) s.setUiTab(v.tab);
-  },
-  deleteView: (id) => {
-    const s = get() as any;
-    const next = (s.savedViews || []).filter((x:any)=> x.id !== id);
-    localStorage.setItem("tm_saved_views", JSON.stringify(next));
-    set({ savedViews: next });
-  },
-  saveThreatFilter: (name) => set((s) => {
-    const id = `flt_${Date.now().toString(36)}`;
-    const entry = { id, name, frameworks: s.threatFrameworkFilter || [], statuses: (s as any).threatStatusFilter || [], evidence: (s as any).threatEvidenceFilter || "any" };
-    const next = [...((s as any).savedThreatFilters || []), entry];
-    localStorage.setItem("tm_saved_threat_filters", JSON.stringify(next));
-    return { savedThreatFilters: next } as any;
-  }),
-  applyThreatFilter: (id) => set((s) => {
-    const e = ((s as any).savedThreatFilters || []).find((x:any)=> x.id === id);
-    if (!e) return {} as any;
-    localStorage.setItem("tm_threat_framework_filter", JSON.stringify(e.frameworks || []));
-    localStorage.setItem("tm_threat_status_filter", JSON.stringify(e.statuses || []));
-    localStorage.setItem("tm_threat_evidence_filter", JSON.stringify(e.evidence || "any"));
-    return { threatFrameworkFilter: e.frameworks || [], threatStatusFilter: e.statuses || [], threatEvidenceFilter: e.evidence || "any" } as any;
-  }),
-  deleteThreatFilter: (id) => set((s) => {
-    const next = ((s as any).savedThreatFilters || []).filter((x:any)=> x.id !== id);
-    localStorage.setItem("tm_saved_threat_filters", JSON.stringify(next));
-    return { savedThreatFilters: next } as any;
-  }),
-  setFrameworkSelections: (ids) => set(() => { localStorage.setItem("tm_frameworks", JSON.stringify(ids)); return { frameworkSelections: ids }; }),
+  return { model: { ...s.model, edges }, selectedEdgeId: null, isDirty: true } as any;
 }),
 
 toggleEdgeFlag: (edgeId, flag) => set((s) => {
@@ -655,7 +530,7 @@ createBoundaryCrossingThreat: (edgeId) => {
         { id: nanoid(), at, type: "threat_created", entity: { kind: "threat", id }, summary: `Threat created: ${t.title}`, details: { framework: (t as any).framework } }
       )
     }));
-  },,
+  },
 
   updateThreat: (id, patch) => {
     get().commitHistory();
@@ -674,7 +549,7 @@ createBoundaryCrossingThreat: (edgeId) => {
         model: logAudit({ ...s.model, threats: nextThreats, updatedAt: at }, { id: nanoid(), at, type: evType, entity: { kind: "threat", id }, summary, details: patch })
       };
     });
-  },,
+  },
 
   deleteThreat: (id) => {
     get().commitHistory();
@@ -748,6 +623,36 @@ createBoundaryCrossingThreat: (edgeId) => {
         ...s.model,
         findings: (s.model.findings || []).filter((f) => f.id !== id),
         threats: (s.model.threats || []).map((t) => ({ ...t, findingIds: (t.findingIds || []).filter((fid) => fid !== id) })),
+        updatedAt: new Date().toISOString()
+      }
+    }));
+  },
+
+  updateThreatEvidence: (threatId, evidenceId, patch) => {
+    get().commitHistory();
+    set((s) => ({
+      model: {
+        ...s.model,
+        threats: (s.model.threats || []).map((t) =>
+          t.id === threatId
+            ? { ...t, commentary: (t.commentary || []).map((c: any) => (c.id === evidenceId ? { ...c, ...patch } : c)) }
+            : t
+        ),
+        updatedAt: new Date().toISOString()
+      }
+    }));
+  },
+
+  updateFindingEvidence: (findingId, evidenceId, patch) => {
+    get().commitHistory();
+    set((s) => ({
+      model: {
+        ...s.model,
+        findings: (s.model.findings || []).map((f) =>
+          f.id === findingId
+            ? { ...f, evidence: (f.evidence || []).map((e: any) => (e.id === evidenceId ? { ...e, ...patch } : e)) }
+            : f
+        ),
         updatedAt: new Date().toISOString()
       }
     }));
