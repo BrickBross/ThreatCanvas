@@ -3,11 +3,12 @@
   "private": true,
   "version": "3.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "typecheck": "tsc -b",
+  "preview": "vite preview"
+},
   "dependencies": {
     "localforage": "^1.10.0",
     "markdown-it": "^14.1.0",
