@@ -37,3 +37,5 @@ See [SECURITY.md](SECURITY.md) for details and validation steps.
 ## License
 
 MIT - see [LICENSE](LICENSE).
+
+---
