@@ -52,6 +52,7 @@ function defaultNode(kind: NodeKind): TMNode {
       }
     }
   };
+}
 
 
 function addNodeAtCenter(kind: NodeKind) {
@@ -65,8 +66,6 @@ function addNodeAtCenter(kind: NodeKind) {
   st.commitHistory();
   st.setNodes([...(nodes || []), n] as any);
   st.selectNode(n.id);
-}
-
 }
 
 export default function App() {
@@ -110,6 +109,7 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const isMac = navigator.platform.toLowerCase().includes("mac");
 
   const onOpenClick = () => fileInputRef.current?.click();
   const onFilePicked = async (f?: File | null) => {
@@ -181,8 +181,6 @@ const buildThreatMatcherFromPrompts = () => {
     return true;
   };
 };
-
-  };
 
   push("act-open", "Open model", "Load a .tm.json file", isMac ? "Cmd+O" : "Ctrl+O", () => onOpenClick());
   push("act-save", "Save", "Download to the last filename (or Save As)", isMac ? "Cmd+S" : "Ctrl+S", () => onSave());
@@ -353,8 +351,6 @@ useEffect(() => {
         if (e.key.toLowerCase() === "b") { e.preventDefault(); addNodeAtCenter("trustBoundary"); return; }
       }
 
-      const isMac = navigator.platform.toLowerCase().includes("mac");
-      const mod = isMac ? e.metaKey : e.ctrlKey;
       if (!mod) return;
       if (e.key.toLowerCase() === "z" && !e.shiftKey) {
         e.preventDefault();
