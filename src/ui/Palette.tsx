@@ -58,7 +58,7 @@ export function Palette() {
     for (const p of providers) out.set(p, [] as any);
     for (const s of filtered) (out.get(s.provider) as any)?.push(s);
     for (const [p, list] of out.entries()) {
-      list.sort((a: any, b: any) => (a.category + a.name).localeCompare(b.category + b.name));
+      list.sort((a: any, b: any) => String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" }));
     }
     return out;
   }, [filtered]);
