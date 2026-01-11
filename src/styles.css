@@ -34,19 +34,64 @@
 
 /* Base layout */
 * { box-sizing: border-box; }
-body, html, #root { margin: 0; padding: 0; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--fg); }
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 60%);
+  color: var(--fg);
+}
 
-.layout { display: grid; grid-template-columns: 300px 1fr 380px; height: 100vh; overflow: hidden; }
-.sidebar { border-right: 1px solid var(--border); background: var(--card); overflow-y: auto; }
-.rightbar { border-left: 1px solid var(--border); background: var(--card); overflow-y: auto; }
-.reactflowWrap { position: relative; background: var(--canvasBg); display: flex; flex-direction: column; height: 100%; }
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 420px;
+  height: 100vh;
+  overflow: hidden;
+  gap: 0;
+}
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--card);
+  overflow-y: auto;
+  padding: 12px;
+}
+.rightbar {
+  border-left: 1px solid var(--border);
+  background: var(--card);
+  overflow-y: auto;
+  padding: 12px;
+}
+.reactflowWrap {
+  position: relative;
+  background: var(--canvasBg);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 .reactflowWrap .react-flow { flex: 1; }
-.topToolbar { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border-bottom: 1px solid var(--border); background: var(--card); position: sticky; top: 0; z-index: 10; }
+.topToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(255,255,255,0.9);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
 
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
 .kv { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px; }
-.card { border: 1px solid var(--border); border-radius: 12px; padding: 12px; }
+.card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
 .cardTitle { font-weight: 700; margin-bottom: 6px; }
 .list { display: flex; flex-direction: column; gap: 8px; }
 .item { border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
@@ -60,7 +105,7 @@ body, html, #root { margin: 0; padding: 0; height: 100%; font-family: -apple-sys
 .muted { color: var(--muted); }
 .badge { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 8px; background: var(--hover); color: var(--fg); font-size: 12px; border: 1px solid var(--border2); }
 
-.input, .select, textarea.input { border: 1px solid var(--border2); background: var(--btnBg); color: var(--fg); padding: 6px 8px; border-radius: 8px; width: 100%; }
+.input, .select, textarea.input { border: 1px solid var(--border2); background: var(--btnBg); color: var(--fg); padding: 10px 12px; border-radius: 10px; width: 100%; }
 label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
 
 .paletteSection { padding: 10px; }
@@ -72,28 +117,24 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
 
 /* Dark mode overrides / variable-driven UI */
 .btn {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--btnBorder);
   background: var(--btnBg);
   color: var(--btnFg);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
-.btn:hover { background: var(--hover); }
+.btn:hover { background: var(--hover); transform: translateY(-1px); }
 
 .btnPrimary {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--primaryBg);
-  background: var(--primaryBg);
+  background: linear-gradient(135deg, var(--primaryBg), #0f4fe3);
   color: var(--primaryFg);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-}
-
-.input, .select, textarea.input {
-  border: 1px solid var(--border2);
-  background: var(--btnBg);
-  color: var(--fg);
+  box-shadow: 0 10px 24px rgba(0,0,0,0.12);
 }
 
 .card {
