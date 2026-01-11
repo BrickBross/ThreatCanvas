@@ -3,6 +3,7 @@ import { SERVICE_CATALOG } from "../model/catalog";
 import { useTMStore } from "../model/store";
 import type { NodeKind } from "../model/types";
 import { ServiceIcon } from "./Icon";
+import { classifyService } from "../model/service_types";
 
 type DragPayload = { type: "basic" | "service"; kind: NodeKind; serviceId?: string };
 
@@ -123,6 +124,9 @@ export function Palette() {
               {isOpen ? (
                 <div className="tech-list">
                   {list.slice(0, 200).map((s: any) => (
+                    (() => {
+                      const cls = classifyService(s);
+                      return (
                     <div
                       key={s.id}
                       className="tech-item"
@@ -139,10 +143,12 @@ export function Palette() {
                           <ServiceIcon provider={s.provider} category={s.category} name={s.name} />
                           <div className="tech-item-name">{s.name}</div>
                         </div>
-                        <span className="badge">{s.kind}</span>
+                        <span className="badge">{cls.nodeKind}</span>
                       </div>
                       <div className="tech-item-category">{s.category}</div>
                     </div>
+                      );
+                    })()
                   ))}
                 </div>
               ) : null}

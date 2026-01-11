@@ -90,17 +90,64 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   gap: 0;
 }
+.layout { grid-template-columns: 300px 1fr var(--rightWidth, 420px); }
 .sidebar {
   border-right: 1px solid var(--border);
   background: var(--bg-secondary);
   overflow-y: auto;
   padding: 0;
 }
+
+.mobileOnly { display: none; }
+.mobileOverlay { display: none; }
+.panelClose { position: sticky; top: 0; z-index: 20; margin: 10px; }
+
+@media (max-width: 980px) {
+  .layout { grid-template-columns: 1fr; }
+  .sidebar, .rightbar { display: none; }
+  .mobileOnly { display: inline-flex; }
+  .mobileOverlay{
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 90;
+  }
+  .mobilePanel{
+    display: block !important;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 85%;
+    max-width: 380px;
+    z-index: 100;
+    transform: translateX(-110%);
+    transition: transform .25s ease;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  }
+  .mobilePanel.left{ left: 0; }
+  .mobilePanel.right{ right: 0; transform: translateX(110%); }
+  .mobilePanel.left.open{ transform: translateX(0); }
+  .mobilePanel.right.open{ transform: translateX(0); }
+  .rightSplitter{ display: none; }
+}
 .rightbar {
   border-left: 1px solid var(--border);
   background: var(--bg-secondary);
   overflow-y: auto;
   padding: 12px;
+}
+
+.rightSplitter{
+  position: absolute;
+  left: -6px;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  cursor: col-resize;
+}
+.rightSplitter:hover{
+  background: rgba(88,166,255,0.12);
 }
 .reactflowWrap {
   position: relative;

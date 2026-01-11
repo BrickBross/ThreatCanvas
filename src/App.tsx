@@ -29,6 +29,7 @@ import { exportCsv, exportDiagramPng, exportDiagramSvg, exportEvidencePackHtml, 
 import { SERVICE_CATALOG } from "./model/catalog";
 import type { NodeKind } from "./model/types";
 import { nanoid } from "nanoid";
+import { classifyService } from "./model/service_types";
 
 const nodeTypes = { tmNode: NodeView, tmBoundary: TrustBoundaryNode };
 const edgeTypes = { tmEdge: EdgeView };
@@ -116,6 +117,12 @@ export default function App() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
   const [actionsOpen, setActionsOpen] = useState(false);
+  const [rightWidth, setRightWidth] = useState<number>(() => {
+    const v = Number(localStorage.getItem("tm_right_width") || "");
+    return Number.isFinite(v) && v >= 300 && v <= 900 ? v : 420;
+  });
+  const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
+  const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
   useEffect(() => {
@@ -498,13 +505,19 @@ useEffect(() => {
       {presentationMode ? <PresentationMode onClose={() => setPresentationMode(false)} /> : null}
       <TemplatesModal open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
       <GlobalSearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-      <div className={`layout ${theme === "dark" ? "themeDark" : "themeLight"}`}>
-      <div className="sidebar">
+      <div
+        className={`layout ${theme === "dark" ? "themeDark" : "themeLight"}`}
+        style={{ ["--rightWidth" as any]: `${rightWidth}px` }}
+      >
+      <div className={`sidebar mobilePanel left ${mobileLeftOpen ? "open" : ""}`}>
+        <button className="btn mobileOnly panelClose" onClick={() => setMobileLeftOpen(false)}>Close</button>
         <Palette />
       </div>
 
       <div id="tm-canvas" className="reactflowWrap" ref={wrapRef}>
         <div className="topToolbar">
+          <button className="btn mobileOnly" onClick={() => setMobileLeftOpen(true)}>Tech</button>
+          <button className="btn mobileOnly" onClick={() => setMobileRightOpen(true)}>Panel</button>
           <button className="btn" disabled={!canUndo()} onClick={undo}>Undo</button>
           <button className="btn" disabled={!canRedo()} onClick={redo}>Redo</button>
           <button className="btn" onClick={onOpenClick}>Open</button>
@@ -674,10 +687,11 @@ useEffect(() => {
             if (payload.type === "service") {
               const svc = SERVICE_CATALOG.find(s => s.id === payload.serviceId);
               if (!svc) return;
-              const n = defaultNode(svc.kind);
+              const cls = classifyService(svc as any);
+              const n = defaultNode(cls.nodeKind);
               n.position = position;
               n.data.label = svc.name;
-              n.data.props = { ...n.data.props, ...svc.defaultProps, provider: svc.provider as any, serviceCategory: svc.category, serviceId: svc.id };
+              n.data.props = { ...n.data.props, ...svc.defaultProps, provider: svc.provider as any, serviceCategory: svc.category, serviceId: svc.id, serviceType: cls.serviceType, serviceTag: cls.tag };
               setNodes([...nodes, n]);
               return;
             }
@@ -711,7 +725,31 @@ useEffect(() => {
         </Modal>
       </div>
 
-      <div className="rightbar">
+      <div className={`rightbar mobilePanel right ${mobileRightOpen ? "open" : ""}`} style={{ position: "relative" }}>
+        <div
+          className="rightSplitter"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            const startX = e.clientX;
+            const startW = rightWidth;
+            let lastW = startW;
+            const onMove = (ev: MouseEvent) => {
+              const dx = ev.clientX - startX;
+              const next = Math.max(320, Math.min(900, startW - dx));
+              lastW = next;
+              setRightWidth(next);
+            };
+            const onUp = () => {
+              window.removeEventListener("mousemove", onMove);
+              window.removeEventListener("mouseup", onUp);
+              localStorage.setItem("tm_right_width", String(lastW));
+            };
+            window.addEventListener("mousemove", onMove);
+            window.addEventListener("mouseup", onUp);
+          }}
+          title="Drag to resize"
+        />
+        <button className="btn mobileOnly panelClose" onClick={() => setMobileRightOpen(false)}>Close</button>
         <RightPanel onOpenSnapshots={openSnapshots} onNavigate={(t) => {
         const st = useTMStore.getState();
 
@@ -779,6 +817,9 @@ useEffect(() => {
       }} />
       </div>
     </div>
+    {(mobileLeftOpen || mobileRightOpen) ? (
+      <div className="mobileOverlay" onClick={() => { setMobileLeftOpen(false); setMobileRightOpen(false); }} />
+    ) : null}
     </>
   );
 }

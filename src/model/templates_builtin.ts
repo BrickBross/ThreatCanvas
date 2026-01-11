@@ -51,7 +51,7 @@ export const builtinTemplates: ThreatTemplate[] = [
   },
   {
     id: "tmpl-cloud-logging-siem",
-    name: "Logging/SIEM – Controls (Cribl/Exabeam oriented)",
+    name: "Logging/SIEM – Controls",
     threats: [
       {
         stride: "R",
@@ -62,7 +62,7 @@ export const builtinTemplates: ThreatTemplate[] = [
         likelihood: 4,
         impact: 4,
         status: "open",
-        mitigation: "Enable audit logs, normalize and route via Cribl, correlate in Exabeam, define retention.",
+        mitigation: "Enable audit logs, normalize and route via Cribl, correlate in SIEM, define retention.",
         owner: "",
         commentary: [],
         findingIds: []

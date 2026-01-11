@@ -189,6 +189,7 @@ export function generateStrideAuto(model: TMModel): Threat[] {
     if (n.data?.kind === "trustBoundary") continue;
     const label = n.data?.label || "component";
     const p = n.data?.props || {};
+    const serviceType = String((p as any).serviceType || "");
 
     if (p.internetExposed && !p.authRequired) {
       pushAuto(threats, `S:unauth:${n.id}`, {
@@ -201,6 +202,57 @@ export function generateStrideAuto(model: TMModel): Threat[] {
         impact: 4,
         status: "open",
         mitigation: "Require strong authentication/authorization; consider WAF and rate limits.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    if (serviceType === "compute_vm" || serviceType === "compute_serverless") {
+      pushAuto(threats, `E:privesc:${n.id}`, {
+        stride: "E",
+        title: `Privilege escalation on ${label}`,
+        description: `${label} is a compute resource (${serviceType}). Misconfiguration or weak IAM can lead to privilege escalation.`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 3,
+        impact: 5,
+        status: "open",
+        mitigation: "Apply least privilege IAM, harden runtime, patch regularly, and monitor for privilege escalation behavior.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    if (serviceType === "database_relational") {
+      pushAuto(threats, `T:sqli:${n.id}`, {
+        stride: "T",
+        title: `SQL injection risk impacting ${label}`,
+        description: `${label} is a relational datastore. Upstream inputs may lead to SQL injection or unsafe query construction.`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 3,
+        impact: 4,
+        status: "open",
+        mitigation: "Use parameterized queries/ORM, validate inputs, least privilege DB users, and monitor for anomalous queries.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    if (serviceType === "storage_object") {
+      pushAuto(threats, `I:publicData:${n.id}`, {
+        stride: "I",
+        title: `Unauthorized data exposure from ${label}`,
+        description: `${label} is object storage. Misconfigured access policies can expose sensitive data.`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 3,
+        impact: 4,
+        status: "open",
+        mitigation: "Enforce private buckets/containers, least privilege policies, encryption, and access logging.",
         owner: "",
         commentary: [],
         findingIds: []

@@ -160,6 +160,10 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
     return { total, open, noEvidence, noFindings, verifiedEvidence };
   }, [threatsAll]);
 
+  const autoStrideThreats = useMemo(() => {
+    return (threatsAll as any[]).filter((t) => String(t.frameworkRef || "").startsWith("STRIDE_AUTO"));
+  }, [threatsAll]);
+
   const filteredThreats = useMemo(() => {
     return (threatsAll as any[]).filter((t: any) => {
       const fwId = getFrameworkId(t);
@@ -184,6 +188,15 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
     for (const t of filteredThreats) {
       const k = keyFor(t);
       (groups[k] ||= []).push(t);
+    }
+    // Move STRIDE auto-generated threats to the top within each group.
+    for (const k of Object.keys(groups)) {
+      groups[k].sort((a: any, b: any) => {
+        const aa = String(a.frameworkRef || "").startsWith("STRIDE_AUTO") ? 0 : 1;
+        const bb = String(b.frameworkRef || "").startsWith("STRIDE_AUTO") ? 0 : 1;
+        if (aa !== bb) return aa - bb;
+        return String(a.title || "").localeCompare(String(b.title || ""));
+      });
     }
     return groups;
   }, [filteredThreats, groupBy]);
@@ -428,6 +441,49 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
       )}
       {tab === "threats" && (
         <>
+          <div className="card">
+            <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+              <div className="cardTitle">STRIDE (auto)</div>
+              <span className="badge">{autoStrideThreats.length}</span>
+            </div>
+            <div className="small muted">Auto-generated STRIDE findings based on node type, flows, and basic properties.</div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              <button
+                className="btn"
+                onClick={() => {
+                  setThreatFrameworkFilter(["STRIDE"]);
+                  setGroupBy("framework");
+                  setCollapsedGroups({});
+                  setTab("threats");
+                }}
+              >
+                Focus STRIDE
+              </button>
+              <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear framework filter</button>
+            </div>
+            {autoStrideThreats.length ? (
+              <div className="list" style={{ marginTop: 10 }}>
+                {autoStrideThreats.slice(0, 6).map((t: any) => (
+                  <div key={t.id} className="item">
+                    <div className="row" style={{ justifyContent: "space-between" }}>
+                      <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                        <span className="badge">{t.stride}</span>
+                        <b>{t.title}</b>
+                      </div>
+                      <span className="badge">{t.status}</span>
+                    </div>
+                    <div className="small muted">{t.frameworkRef}</div>
+                  </div>
+                ))}
+                {autoStrideThreats.length > 6 ? <div className="small muted">Showing first 6.</div> : null}
+              </div>
+            ) : (
+              <div className="small muted" style={{ marginTop: 10 }}>
+                No auto STRIDE findings yet. Enable Auto STRIDE in Actions and add services/flows.
+              </div>
+            )}
+          </div>
+
           <div className="card">
             <div className="row" style={{ justifyContent: "space-between" }}>
               <div className="cardTitle">Threats</div>
