@@ -1,8 +1,16 @@
-﻿# ThreatCanvas
-
 <p align="center">
   <img src="public/logo.svg" alt="ThreatCanvas" width="640" />
 </p>
+
+<p align="center">
+  <a href="https://brickbross.github.io/ThreatCanvas/"><img alt="GitHub Pages" src="https://img.shields.io/badge/GitHub%20Pages-live-0ea5e9?logo=github&logoColor=white"></a>
+  <a href="https://github.com/BrickBross/ThreatCanvas/actions/workflows/deploy-pages.yml"><img alt="Deploy to GitHub Pages" src="https://github.com/BrickBross/ThreatCanvas/actions/workflows/deploy-pages.yml/badge.svg"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/BrickBross/ThreatCanvas"></a>
+  <a href="https://attack.mitre.org/"><img alt="MITRE ATT&CK (reference)" src="https://img.shields.io/badge/MITRE-ATT%26CK-111827"></a>
+  <a href="https://learn.microsoft.com/en-us/security/engineering/threat-modeling"><img alt="Threat modeling" src="https://img.shields.io/badge/Threat%20Modeling-browser--native-14b8a6"></a>
+</p>
+
+<h1 align="center">ThreatCanvas</h1>
 
 **ThreatCanvas** is a fast, browser-native threat modeling platform with built-in frameworks, findings, evidence tracking, and reporting. **No backend required.**
 
