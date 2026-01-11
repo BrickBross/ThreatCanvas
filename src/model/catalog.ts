@@ -2754,6 +2754,490 @@ export const SERVICE_CATALOG = [
     "iconKey": "gcp:Messaging"
   },
   {
+    "provider": "aws",
+    "category": "Compute",
+    "name": "Amazon EKS",
+    "id": "6a5a2a17-1c5d-4d1d-a6e6-7c0f9a6e5f21",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "aws",
+      "serviceCategory": "Compute",
+      "serviceId": "6a5a2a17-1c5d-4d1d-a6e6-7c0f9a6e5f21",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "aws:Compute"
+  },
+  {
+    "provider": "aws",
+    "category": "Compute",
+    "name": "AWS Fargate",
+    "id": "0b9d0c7f-6f86-4b36-9d8d-8f63cc8fa2bd",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "aws",
+      "serviceCategory": "Compute",
+      "serviceId": "0b9d0c7f-6f86-4b36-9d8d-8f63cc8fa2bd",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "aws:Compute"
+  },
+  {
+    "provider": "aws",
+    "category": "Data",
+    "name": "Amazon DynamoDB",
+    "id": "c7df1f14-1b69-4a52-b2e5-0dd94e5ac0bb",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "aws",
+      "serviceCategory": "Data",
+      "serviceId": "c7df1f14-1b69-4a52-b2e5-0dd94e5ac0bb",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "aws:Data"
+  },
+  {
+    "provider": "aws",
+    "category": "Data",
+    "name": "Amazon Aurora",
+    "id": "e9f38c52-8c5d-4e72-9f6c-98bf59a96f2d",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "aws",
+      "serviceCategory": "Data",
+      "serviceId": "e9f38c52-8c5d-4e72-9f6c-98bf59a96f2d",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "aws:Data"
+  },
+  {
+    "provider": "azure",
+    "category": "Compute",
+    "name": "Azure Kubernetes Service",
+    "id": "7a83b1b6-6c31-4a1e-9b0e-2e8bf6b5e1a2",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Compute",
+      "serviceId": "7a83b1b6-6c31-4a1e-9b0e-2e8bf6b5e1a2",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "azure:Compute"
+  },
+  {
+    "provider": "azure",
+    "category": "Compute",
+    "name": "Azure App Service",
+    "id": "4f9c9d25-826d-4d3c-9df0-6e72c4a2d4f2",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Compute",
+      "serviceId": "4f9c9d25-826d-4d3c-9df0-6e72c4a2d4f2",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "azure:Compute"
+  },
+  {
+    "provider": "azure",
+    "category": "Data",
+    "name": "Azure SQL Database",
+    "id": "f0f5b6d4-2f4c-4c5c-9e9d-4b4df2f6d212",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Data",
+      "serviceId": "f0f5b6d4-2f4c-4c5c-9e9d-4b4df2f6d212",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "azure:Data"
+  },
+  {
+    "provider": "azure",
+    "category": "Data",
+    "name": "Azure Cosmos DB",
+    "id": "9b6e6fb9-9a2f-4b7f-8c0d-9f05bd27a1ab",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Data",
+      "serviceId": "9b6e6fb9-9a2f-4b7f-8c0d-9f05bd27a1ab",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "azure:Data"
+  },
+  {
+    "provider": "azure",
+    "category": "Messaging",
+    "name": "Azure Event Hubs",
+    "id": "d45c2df4-5401-4a69-b356-6a6f1ef7d3a7",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Messaging",
+      "serviceId": "d45c2df4-5401-4a69-b356-6a6f1ef7d3a7",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "azure:Messaging"
+  },
+  {
+    "provider": "azure",
+    "category": "Data",
+    "name": "Azure Blob Storage",
+    "id": "b3a2c0f6-72c1-4db5-821a-6b6a5f9e2c4c",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "azure",
+      "serviceCategory": "Data",
+      "serviceId": "b3a2c0f6-72c1-4db5-821a-6b6a5f9e2c4c",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "azure:Data"
+  },
+  {
+    "provider": "gcp",
+    "category": "Compute",
+    "name": "Google Kubernetes Engine",
+    "id": "ec6c43e0-8a5c-4f68-bbcb-5c0e3f7c9d2a",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "gcp",
+      "serviceCategory": "Compute",
+      "serviceId": "ec6c43e0-8a5c-4f68-bbcb-5c0e3f7c9d2a",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "gcp:Compute"
+  },
+  {
+    "provider": "gcp",
+    "category": "Compute",
+    "name": "Cloud Run",
+    "id": "5e6b7c8d-9f0a-4b1c-8e6f-7d8c9e0f1a2b",
+    "kind": "process",
+    "defaultProps": {
+      "provider": "gcp",
+      "serviceCategory": "Compute",
+      "serviceId": "5e6b7c8d-9f0a-4b1c-8e6f-7d8c9e0f1a2b",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "gcp:Compute"
+  },
+  {
+    "provider": "gcp",
+    "category": "Data",
+    "name": "Cloud SQL",
+    "id": "4e2d3c5b-6a7f-4b9c-8d1e-2f3a4b5c6d7e",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "gcp",
+      "serviceCategory": "Data",
+      "serviceId": "4e2d3c5b-6a7f-4b9c-8d1e-2f3a4b5c6d7e",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "gcp:Data"
+  },
+  {
+    "provider": "gcp",
+    "category": "Data",
+    "name": "BigQuery",
+    "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "gcp",
+      "serviceCategory": "Data",
+      "serviceId": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "gcp:Data"
+  },
+  {
+    "provider": "gcp",
+    "category": "Data",
+    "name": "Cloud Storage",
+    "id": "9f8e7d6c-5b4a-3c2d-1e0f-9a8b7c6d5e4f",
+    "kind": "datastore",
+    "defaultProps": {
+      "provider": "gcp",
+      "serviceCategory": "Data",
+      "serviceId": "9f8e7d6c-5b4a-3c2d-1e0f-9a8b7c6d5e4f",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true,
+      "encryptionAtRest": true
+    },
+    "iconKey": "gcp:Data"
+  },
+  {
+    "provider": "saas",
+    "category": "Security",
+    "name": "CrowdStrike Falcon",
+    "id": "f3f5c8a2-5b83-4d0a-9f0e-2d6d9b1c7a11",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Security",
+      "serviceId": "f3f5c8a2-5b83-4d0a-9f0e-2d6d9b1c7a11",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Security"
+  },
+  {
+    "provider": "saas",
+    "category": "Security",
+    "name": "Microsoft Defender for Endpoint",
+    "id": "a9d3f0e6-1b72-4c5e-9b92-3f7e4a6c8d21",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Security",
+      "serviceId": "a9d3f0e6-1b72-4c5e-9b92-3f7e4a6c8d21",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Security"
+  },
+  {
+    "provider": "saas",
+    "category": "Security",
+    "name": "Zscaler Internet Access",
+    "id": "c2b4d5e7-8f90-4d1a-9c3e-1a2b3c4d5e6f",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Security",
+      "serviceId": "c2b4d5e7-8f90-4d1a-9c3e-1a2b3c4d5e6f",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Security"
+  },
+  {
+    "provider": "saas",
+    "category": "Security",
+    "name": "Cloudflare Zero Trust",
+    "id": "d7e8f9a0-b1c2-4d3e-9f4a-5b6c7d8e9f01",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Security",
+      "serviceId": "d7e8f9a0-b1c2-4d3e-9f4a-5b6c7d8e9f01",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Security"
+  },
+  {
+    "provider": "saas",
+    "category": "Observability",
+    "name": "Datadog",
+    "id": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Observability",
+      "serviceId": "e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Observability"
+  },
+  {
+    "provider": "saas",
+    "category": "Observability",
+    "name": "New Relic",
+    "id": "0f1e2d3c-4b5a-6978-8c9d-0e1f2a3b4c5d",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Observability",
+      "serviceId": "0f1e2d3c-4b5a-6978-8c9d-0e1f2a3b4c5d",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Observability"
+  },
+  {
+    "provider": "saas",
+    "category": "Observability",
+    "name": "Splunk Cloud",
+    "id": "12345678-90ab-cdef-1234-567890abcdef",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Observability",
+      "serviceId": "12345678-90ab-cdef-1234-567890abcdef",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Observability"
+  },
+  {
+    "provider": "saas",
+    "category": "Identity & Access",
+    "name": "Google Workspace",
+    "id": "9c8b7a6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Identity & Access",
+      "serviceId": "9c8b7a6d-5e4f-3a2b-1c0d-9e8f7a6b5c4d",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Identity & Access"
+  },
+  {
+    "provider": "saas",
+    "category": "Identity & Access",
+    "name": "Microsoft 365",
+    "id": "8b7c6d5e-4f3a-2b1c-0d9e-8f7a6b5c4d3e",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Identity & Access",
+      "serviceId": "8b7c6d5e-4f3a-2b1c-0d9e-8f7a6b5c4d3e",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Identity & Access"
+  },
+  {
+    "provider": "saas",
+    "category": "Developer Tools",
+    "name": "GitHub",
+    "id": "7a6b5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c2d",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Developer Tools",
+      "serviceId": "7a6b5c4d-3e2f-1a0b-9c8d-7e6f5a4b3c2d",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Developer Tools"
+  },
+  {
+    "provider": "saas",
+    "category": "Developer Tools",
+    "name": "GitLab",
+    "id": "6b5c4d3e-2f1a-0b9c-8d7e-6f5a4b3c2d1e",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "Developer Tools",
+      "serviceId": "6b5c4d3e-2f1a-0b9c-8d7e-6f5a4b3c2d1e",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:Developer Tools"
+  },
+  {
+    "provider": "saas",
+    "category": "DevOps",
+    "name": "PagerDuty",
+    "id": "5c4d3e2f-1a0b-9c8d-7e6f-5a4b3c2d1e0f",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "DevOps",
+      "serviceId": "5c4d3e2f-1a0b-9c8d-7e6f-5a4b3c2d1e0f",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:DevOps"
+  },
+  {
+    "provider": "saas",
+    "category": "DevOps",
+    "name": "ServiceNow",
+    "id": "4d3e2f1a-0b9c-8d7e-6f5a-4b3c2d1e0f9a",
+    "kind": "external",
+    "defaultProps": {
+      "provider": "saas",
+      "serviceCategory": "DevOps",
+      "serviceId": "4d3e2f1a-0b9c-8d7e-6f5a-4b3c2d1e0f9a",
+      "dataClassification": "Internal",
+      "internetExposed": false,
+      "authRequired": true,
+      "loggingEnabled": true
+    },
+    "iconKey": "saas:DevOps"
+  },
+  {
     "provider": "onprem",
     "category": "On-Prem",
     "name": "Active Directory / LDAP",

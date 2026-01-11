@@ -125,6 +125,63 @@ export default function App() {
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
+  const autoLayout = () => {
+    const st = useTMStore.getState();
+    const nodes = (st.model.nodes || []) as TMNode[];
+    const edges = (st.model.edges || []) as TMEdge[];
+    if (!nodes.length) return;
+    const spacingX = 320;
+    const spacingY = 200;
+    const indeg = new Map<string, number>();
+    const adj = new Map<string, string[]>();
+    for (const n of nodes) {
+      indeg.set(n.id, 0);
+      adj.set(n.id, []);
+    }
+    for (const e of edges) {
+      if (!indeg.has(e.source) || !indeg.has(e.target)) continue;
+      adj.get(e.source)!.push(e.target);
+      indeg.set(e.target, (indeg.get(e.target) || 0) + 1);
+    }
+    const level = new Map<string, number>();
+    const queue: string[] = [];
+    for (const [id, deg] of indeg.entries()) {
+      if (deg === 0) queue.push(id);
+    }
+    if (!queue.length) queue.push(...nodes.map((n) => n.id)); // cyclic graph fallback
+
+    while (queue.length) {
+      const id = queue.shift() as string;
+      const cur = level.get(id) ?? 0;
+      for (const nxt of adj.get(id) || []) {
+        const nextLevel = Math.max(level.get(nxt) ?? 0, cur + 1);
+        level.set(nxt, nextLevel);
+        indeg.set(nxt, (indeg.get(nxt) || 1) - 1);
+        if ((indeg.get(nxt) || 0) <= 0) queue.push(nxt);
+      }
+    }
+    // any unassigned (from cycles) stay at level 0
+    for (const n of nodes) {
+      if (!level.has(n.id)) level.set(n.id, 0);
+    }
+    const byLevel: Record<number, TMNode[]> = {};
+    for (const n of nodes) {
+      const lv = level.get(n.id) || 0;
+      (byLevel[lv] ||= []).push(n);
+    }
+    const nextNodes = nodes.map((n) => {
+      const lv = level.get(n.id) || 0;
+      const siblings = byLevel[lv] || [];
+      const idx = siblings.findIndex((s) => s.id === n.id);
+      return {
+        ...n,
+        position: { x: lv * spacingX, y: idx * spacingY }
+      };
+    });
+    st.commitHistory();
+    st.setNodes(nextNodes as any);
+  };
+
   useEffect(() => {
     document.documentElement.classList.toggle("light-mode", theme === "light");
     document.body.classList.toggle("themeDark", theme === "dark");
@@ -556,6 +613,11 @@ useEffect(() => {
                 <button className="btn" onClick={() => setTemplatesOpen(true)}>Templates…</button>
               </div>
               <div className="hr" />
+              <div className="row" style={{ flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+                <button className="btn" onClick={autoLayout} title="Arrange nodes in a readable left-to-right flow and tidy flows">
+                  Auto-align
+                </button>
+              </div>
               <div className="row" style={{ flexWrap: "wrap", alignItems: "center" }}>
                 <button className="btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
                   Theme: {theme === "dark" ? "Dark" : "Light"}
