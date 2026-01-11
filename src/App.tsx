@@ -115,6 +115,11 @@ export default function App() {
   const [presentationMode, setPresentationMode] = useState(false);
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
+  useEffect(() => {
+    document.body.classList.remove("themeLight", "themeDark");
+    document.body.classList.add(theme === "dark" ? "themeDark" : "themeLight");
+  }, [theme]);
+
   const onOpenClick = () => fileInputRef.current?.click();
   const onFilePicked = async (f?: File | null) => {
     if (!f) return;

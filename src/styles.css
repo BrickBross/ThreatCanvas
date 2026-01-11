@@ -49,6 +49,16 @@ p { margin: 0 0 10px 0; color: var(--muted); }
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
+.themeDark body, body.themeDark {
+  background: radial-gradient(circle at 20% 20%, rgba(123,176,255,0.05), transparent 28%),
+              radial-gradient(circle at 80% 0%, rgba(12,18,40,0.5), transparent 38%),
+              #0b0d10;
+}
+h1,h2,h3,h4,h5 { font-weight: 700; margin: 0; }
+p { margin: 0 0 10px 0; color: var(--muted); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
 .layout {
   display: grid;
   grid-template-columns: 280px 1fr 420px;
@@ -111,6 +121,7 @@ a:hover { text-decoration: underline; }
 .tiny { font-size: 11px; }
 .muted { color: var(--muted); }
 .badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; background: rgba(45,127,249,0.08); color: #0f4fe3; font-size: 12px; border: 1px solid rgba(45,127,249,0.16); }
+.pill { background: rgba(45,127,249,0.12); color: #0f4fe3; padding: 2px 8px; border-radius: 999px; font-size: 11px; border: 1px solid rgba(45,127,249,0.2); }
 
 .input, .select, textarea.input { border: 1px solid var(--border2); background: var(--btnBg); color: var(--fg); padding: 10px 12px; border-radius: 10px; width: 100%; }
 label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
@@ -121,6 +132,14 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
 .paletteSection .item { transition: transform 120ms ease, box-shadow 120ms ease; }
 .paletteSection .item:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.06); }
 .reactflowWrap .react-flow { font-family: inherit; }
+.paletteSection details {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(255,255,255,0.75);
+}
+.paletteSection summary { font-weight: 600; }
+.paletteSection .list .item { background: var(--card); }
 
 .iconBubble{width:26px;height:26px;border:1px solid #e5e5e5;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111}
 .iconBubble svg{width:16px;height:16px}
@@ -227,3 +246,11 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
 .heatSel{outline:2px solid var(--accent);}
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{border-bottom:1px solid var(--border);padding:8px;text-align:left}
+
+/* Resizer handles */
+.react-flow__resize-control {
+  background: #0f4fe3;
+  border: 1px solid #0f4fe3;
+  width: 10px;
+  height: 10px;
+}

@@ -1,12 +1,13 @@
 import React from "react";
-import { Handle, Position } from "reactflow";
+import { Handle, Position, NodeResizer } from "reactflow";
 import type { TMNodeData } from "../model/store";
 import { ServiceIcon } from "./Icon";
 
 export function NodeView({ data }: { data: TMNodeData }) {
   const p = data.props || {};
   return (
-    <div className="card" style={{minWidth:170}}>
+    <div className="card" style={{minWidth:170, position:"relative"}}>
+      <NodeResizer minWidth={140} minHeight={120} color="#0f4fe3" handleStyle={{ borderRadius: 6, width: 10, height: 10, border: "1px solid #0f4fe3" }} />
       <Handle type="target" position={Position.Left} />
       <div className="row" style={{justifyContent:"space-between"}}>
         <div className="row">
