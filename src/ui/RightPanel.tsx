@@ -917,11 +917,11 @@ function HelpCard() {
         <div>
           <b>Status guidance</b>
           <div className="small muted">
-            Threats: open -> in_analysis -> mitigated/accepted -> verified (or rejected)
+            Threats: open &gt; in_analysis &gt; mitigated/accepted &gt; verified (or rejected)
             <br />
-            Findings: proposed -> in_review -> remediation_planned -> remediated -> verified (or accepted/rejected)
+            Findings: proposed &gt; in_review &gt; remediation_planned &gt; remediated &gt; verified (or accepted/rejected)
             <br />
-            Evidence: draft -> submitted -> reviewed -> verified (or superseded/rejected)
+            Evidence: draft &gt; submitted &gt; reviewed &gt; verified (or superseded/rejected)
           </div>
         </div>
 
