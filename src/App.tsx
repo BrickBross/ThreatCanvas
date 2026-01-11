@@ -115,6 +115,7 @@ export default function App() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [presentationMode, setPresentationMode] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
   useEffect(() => {
@@ -506,39 +507,64 @@ useEffect(() => {
         <div className="topToolbar">
           <button className="btn" disabled={!canUndo()} onClick={undo}>Undo</button>
           <button className="btn" disabled={!canRedo()} onClick={redo}>Redo</button>
-
-<button className="btn" onClick={onOpenClick}>Open</button>
-<button className="btn" onClick={onSave} disabled={!isDirty && !lastFileName}>Save</button>
-<button className="btn" onClick={onSaveAs}>Save As</button>
-
-<button className="btn" onClick={() => setTemplatesOpen(true)}>Templates</button>
-<button className="btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-  Theme: {theme === "dark" ? "Dark" : "Light"}
-</button>
-<button className="btn" title="Automatically add STRIDE findings as you model" onClick={() => setAutoStrideEnabled(!autoStrideEnabled)}>
-  Auto STRIDE: {autoStrideEnabled ? "On" : "Off"}
-</button>
-<button className="btn" onClick={onExportReport}>Report PDF</button>
-<button className="btn" title="Redact labels in exports" onClick={() => setRedactExport(!redactExport)}>
-  Redact: {redactExport ? "on" : "off"}
-</button>
-<button className="btn" onClick={onEvidencePack}>Evidence ZIP</button>
-
-          <button className="btn" onClick={() => setThreats(generateStride(model))}>Generate STRIDE</button>
-
-          <button className="btn" onClick={() => exportMarkdown(model)}>Export MD</button>
-          <button className="btn" onClick={() => exportHtmlReport(model)}>Export HTML</button>
-          <button className="btn" onClick={() => exportEvidencePackHtml(model)}>Evidence Pack</button>
-          <button className="btn" onClick={() => exportCsv(model)}>Export CSV</button>
-          <button className="btn" onClick={() => wrapRef.current && exportDiagramPng(wrapRef.current.querySelector(".react-flow") as HTMLElement, model.name.replace(/\s+/g,"_"))}>PNG</button>
-          <button className="btn" onClick={() => wrapRef.current && exportDiagramSvg(wrapRef.current.querySelector(".react-flow") as HTMLElement, model.name.replace(/\s+/g,"_"))}>SVG</button>
-
-          <button className="btn" onClick={exportJson}>Export JSON</button>
-          <label className="btn">
-            Import JSON
-            <input type="file" accept=".json" style={{display:"none"}} onChange={(e) => { const f = e.target.files?.[0]; if (f) importJsonFile(f); }} />
-          </label>
+          <button className="btn" onClick={onOpenClick}>Open</button>
+          <button className="btn" onClick={onSave} disabled={!isDirty && !lastFileName}>Save</button>
+          <button className="btn" onClick={() => setActionsOpen(true)}>
+            Actions
+          </button>
         </div>
+
+        <Modal open={actionsOpen} title="Actions" onClose={() => setActionsOpen(false)}>
+          <div className="col" style={{ gap: 12 }}>
+            <div className="card">
+              <div className="cardTitle">Model</div>
+              <div className="row" style={{ flexWrap: "wrap" }}>
+                <button className="btn" onClick={onOpenClick}>Open…</button>
+                <button className="btn" onClick={onSave} disabled={!isDirty && !lastFileName}>Save</button>
+                <button className="btn" onClick={onSaveAs}>Save As…</button>
+                <button className="btn" onClick={() => setTemplatesOpen(true)}>Templates…</button>
+              </div>
+              <div className="hr" />
+              <div className="row" style={{ flexWrap: "wrap", alignItems: "center" }}>
+                <button className="btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+                  Theme: {theme === "dark" ? "Dark" : "Light"}
+                </button>
+                <button className="btn" title="Automatically add STRIDE findings as you model" onClick={() => setAutoStrideEnabled(!autoStrideEnabled)}>
+                  Auto STRIDE: {autoStrideEnabled ? "On" : "Off"}
+                </button>
+                <button className="btn" title="Redact labels in exports" onClick={() => setRedactExport(!redactExport)}>
+                  Redact: {redactExport ? "on" : "off"}
+                </button>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="cardTitle">Reports</div>
+              <div className="row" style={{ flexWrap: "wrap" }}>
+                <button className="btn" onClick={onExportReport}>Report PDF</button>
+                <button className="btn" onClick={onEvidencePack}>Evidence ZIP</button>
+                <button className="btn" onClick={() => setThreats(generateStride(model))}>Generate STRIDE</button>
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="cardTitle">Export</div>
+              <div className="row" style={{ flexWrap: "wrap" }}>
+                <button className="btn" onClick={() => exportMarkdown(model)}>Export MD</button>
+                <button className="btn" onClick={() => exportHtmlReport(model)}>Export HTML</button>
+                <button className="btn" onClick={() => exportEvidencePackHtml(model)}>Evidence Pack</button>
+                <button className="btn" onClick={() => exportCsv(model)}>Export CSV</button>
+                <button className="btn" onClick={() => wrapRef.current && exportDiagramPng(wrapRef.current.querySelector(".react-flow") as HTMLElement, model.name.replace(/\s+/g,"_"))}>PNG</button>
+                <button className="btn" onClick={() => wrapRef.current && exportDiagramSvg(wrapRef.current.querySelector(".react-flow") as HTMLElement, model.name.replace(/\s+/g,"_"))}>SVG</button>
+                <button className="btn" onClick={exportJson}>Export JSON</button>
+                <label className="btn">
+                  Import JSON
+                  <input type="file" accept=".json" style={{display:"none"}} onChange={(e) => { const f = e.target.files?.[0]; if (f) importJsonFile(f); }} />
+                </label>
+              </div>
+            </div>
+          </div>
+        </Modal>
 
         <ReactFlow
           onPaneContextMenu={(ev) => {

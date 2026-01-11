@@ -426,6 +426,385 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
           </div>
         </>
       )}
+      {tab === "threats" && (
+        <>
+          <div className="card">
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <div className="cardTitle">Threats</div>
+              <button className="btn" onClick={addThreatFromSelection} disabled={isTextEditing()}>
+                Add
+              </button>
+            </div>
+            <div className="small muted">Track threats, link findings, and record evidence.</div>
+            <div className="row" style={{ gap: 12, flexWrap: "wrap", marginTop: 8 }}>
+              <div className="small">Total: {threatSummary.total}</div>
+              <div className="small">Open/In analysis: {threatSummary.open}</div>
+              <div className="small">No evidence: {threatSummary.noEvidence}</div>
+              <div className="small">No findings: {threatSummary.noFindings}</div>
+              <div className="small">Has verified evidence: {threatSummary.verifiedEvidence}</div>
+            </div>
+            <div className="hr" />
+            <div className="small muted"><b>Generate threats from libraries</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <select
+                className="select"
+                multiple
+                size={Math.min(6, FRAMEWORKS.length)}
+                value={frameworkSelections as any}
+                onChange={(e) => {
+                  const opts = Array.from(e.target.selectedOptions).map((o) => o.value as FrameworkId);
+                  setFrameworkSelections(opts);
+                }}
+              >
+                {FRAMEWORKS.map((fw) => (
+                  <option key={fw.id} value={fw.id}>
+                    {fw.name}
+                  </option>
+                ))}
+              </select>
+              <div className="col" style={{ gap: 6 }}>
+                <label className="small muted">Weights (likelihood/impact)</label>
+                {FRAMEWORKS.map((fw) => (
+                  <div key={"wt-" + fw.id} className="row" style={{ gap: 6, alignItems: "center" }}>
+                    <span className="tiny muted" style={{ width: 60 }}>{fw.id}</span>
+                    <label className="small muted">
+                      L
+                      <input
+                        className="input"
+                        style={{ width: 70, marginLeft: 6 }}
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={frameworkWeights[fw.id]?.likelihood ?? DEFAULT_WEIGHTS[fw.id].likelihood}
+                        onChange={(e) => setFrameworkWeight(fw.id, { likelihood: Math.max(1, Math.min(5, Number(e.target.value))) })}
+                      />
+                    </label>
+                    <label className="small muted">
+                      I
+                      <input
+                        className="input"
+                        style={{ width: 70, marginLeft: 6 }}
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={frameworkWeights[fw.id]?.impact ?? DEFAULT_WEIGHTS[fw.id].impact}
+                        onChange={(e) => setFrameworkWeight(fw.id, { impact: Math.max(1, Math.min(5, Number(e.target.value))) })}
+                      />
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <div className="col" style={{ gap: 6 }}>
+                <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <input type="checkbox" checked={generateGapsOnly} onChange={(e) => setGenerateGapsOnly(e.target.checked)} />
+                  <span className="small muted">Generate gaps only</span>
+                </label>
+                <div className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <label className="small muted">Scope:</label>
+                  <label className="row" style={{ gap: 4, alignItems: "center" }}>
+                    <input type="radio" name="genScope" checked={generateScope === "selection"} onChange={() => setGenerateScope("selection")} />
+                    <span className="small muted">Selection</span>
+                  </label>
+                  <label className="row" style={{ gap: 4, alignItems: "center" }}>
+                    <input type="radio" name="genScope" checked={generateScope === "model"} onChange={() => setGenerateScope("model")} />
+                    <span className="small muted">Whole model</span>
+                  </label>
+                </div>
+                <div className="row" style={{ gap: 8 }}>
+                  <button
+                    className="btnPrimary"
+                    onClick={() => {
+                      const st = useTMStore.getState();
+                      const selection =
+                        generateScope === "selection"
+                          ? { nodeId: st.selectedNodeId, edgeId: st.selectedEdgeId }
+                          : { nodeId: null, edgeId: null };
+                      const generated = generateFromFrameworks(
+                        st.model as any,
+                        frameworkSelections as any,
+                        selection,
+                        { weights: { ...DEFAULT_WEIGHTS, ...(frameworkWeights || {}) } as any, gapsOnly: generateGapsOnly }
+                      );
+                      st.commitHistory();
+                      for (const t of generated) st.addThreat(t as any);
+                      setTab("threats");
+                    }}
+                    disabled={!frameworkSelections.length}
+                  >
+                    Generate from selected libraries
+                  </button>
+                  <button className="btn" onClick={() => setFrameworkSelections(["STRIDE"] as any)}>Reset</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <span className="small muted">Saved views:</span>
+              <select
+                className="select"
+                style={{ maxWidth: 240 }}
+                value=""
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v) applyView(v);
+                }}
+              >
+                <option value="">Apply.</option>
+                {(savedViews || []).map((v: any) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                className="btn"
+                onClick={() => {
+                  const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim();
+                  if (name) saveView(name);
+                }}
+              >
+                Save view
+              </button>
+              <button
+                className="btn"
+                onClick={() => {
+                  const name = (prompt("Delete view by name (exact):") || "").trim();
+                  const v = (savedViews || []).find((x: any) => x.name === name);
+                  if (v) deleteView(v.id);
+                }}
+              >
+                Delete view
+              </button>
+
+              <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
+              <select
+                className="select"
+                style={{ maxWidth: 240 }}
+                value=""
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v) applyThreatFilter(v);
+                }}
+              >
+                <option value="">Apply.</option>
+                {(savedThreatFilters || []).map((f: any) => (
+                  <option key={f.id} value={f.id}>
+                    {f.name}
+                  </option>
+                ))}
+              </select>
+              <button className="btn" onClick={() => { const name = prompt("Name this saved filter:") || ""; if (name.trim()) saveThreatFilter(name.trim()); }}>
+                Save current
+              </button>
+              <button className="btn" onClick={() => { const name = prompt("Delete saved filter by name (exact):") || ""; const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim()); if (f) deleteThreatFilter(f.id); }}>
+                Delete filter
+              </button>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Status filter</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              {THREAT_STATUSES.map((s) => (
+                <label key={s} className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={(threatStatusFilter || []).includes(s)}
+                    onChange={() => {
+                      const on = (threatStatusFilter || []).includes(s);
+                      const next = on ? (threatStatusFilter || []).filter((x) => x !== s) : [...(threatStatusFilter || []), s];
+                      setThreatStatusFilter(next);
+                    }}
+                  />
+                  <span className="small muted">{s}</span>
+                </label>
+              ))}
+              <button className="btn" onClick={() => setThreatStatusFilter([])}>Clear status</button>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Evidence filter</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "any"} onChange={() => setThreatEvidenceFilter("any")} />
+                <span className="small muted">Any</span>
+              </label>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "no_evidence"} onChange={() => setThreatEvidenceFilter("no_evidence")} />
+                <span className="small muted">No evidence</span>
+              </label>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "has_verified"} onChange={() => setThreatEvidenceFilter("has_verified")} />
+                <span className="small muted">Has verified evidence</span>
+              </label>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Framework filter</b></div>
+            <div className="list" style={{ marginTop: 8 }}>
+              {FRAMEWORKS.map((fw) => (
+                <label key={fw.id} className="item" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={threatFrameworkFilter.includes(fw.id)}
+                    onChange={() => {
+                      const on = threatFrameworkFilter.includes(fw.id);
+                      const next = on ? threatFrameworkFilter.filter((x) => x !== fw.id) : [...threatFrameworkFilter, fw.id];
+                      setThreatFrameworkFilter(next);
+                    }}
+                  />
+                  <div className="small muted">{fw.name}</div>
+                </label>
+              ))}
+              <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear filter</button>
+              <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear risk</button>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Bulk actions</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              <button className="btn" onClick={() => {
+                const v = prompt("Set status for filtered threats (open, in_analysis, mitigated, accepted, verified, rejected):") || "";
+                if (!v.trim()) return;
+                const st = useTMStore.getState();
+                st.commitHistory();
+                for (const t of filteredThreats) st.updateThreat(t.id, { status: v.trim() as any });
+              }}>Set status</button>
+              <button className="btn" onClick={() => {
+                const v = prompt("Set owner for filtered threats:") || "";
+                const st = useTMStore.getState();
+                st.commitHistory();
+                for (const t of filteredThreats) st.updateThreat(t.id, { owner: v });
+              }}>Set owner</button>
+              <button className="btn" onClick={() => {
+                const l = Number(prompt("Set likelihood (1-5):") || "");
+                const i = Number(prompt("Set impact (1-5):") || "");
+                if (!l && !i) return;
+                const st = useTMStore.getState();
+                st.commitHistory();
+                for (const t of filteredThreats) st.updateThreat(t.id, { ...(l ? { likelihood: l } : {}), ...(i ? { impact: i } : {}) } as any);
+              }}>Set L/I</button>
+              <button className="btn" onClick={() => {
+                if (!confirm(`Delete ${filteredThreats.length} filtered threats?`)) return;
+                const st = useTMStore.getState();
+                st.commitHistory();
+                for (const t of filteredThreats) st.deleteThreat(t.id);
+              }}>Delete</button>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Group by</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              <select className="select" value={groupBy} onChange={(e) => setGroupBy(e.target.value as any)}>
+                <option value="none">none</option>
+                <option value="framework">framework</option>
+                <option value="status">status</option>
+                <option value="owner">owner</option>
+              </select>
+              <button className="btn" onClick={() => setCollapsedGroups({})}>Expand all</button>
+            </div>
+          </div>
+
+          <div className="list" style={{ marginTop: 10 }}>
+            {Object.entries(groupedThreats).map(([gk, items]) => {
+              const title = groupBy === "framework" ? (FRAMEWORKS.find((f) => f.id === gk)?.name || gk) : gk;
+              const isCollapsed = !!collapsedGroups[gk];
+              return (
+                <div key={gk} className="card" style={{ marginBottom: 10 }}>
+                  <div className="row" style={{ justifyContent: "space-between" }}>
+                    <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                      <button className="btn" onClick={() => setCollapsedGroups((s) => ({ ...s, [gk]: !s[gk] }))} title={isCollapsed ? "Expand" : "Collapse"}>
+                        {isCollapsed ? "+" : ">"}
+                      </button>
+                      <b>{title}</b>
+                      <span className="badge">{items.length}</span>
+                    </div>
+                  </div>
+                  {!isCollapsed ? (
+                    <div className="list" style={{ marginTop: 10 }}>
+                      <VirtualList
+                        items={items.slice(0, 200)}
+                        rowHeight={360}
+                        height={Math.min(900, 360 * Math.min(items.length, 2.5))}
+                        getKey={(it: any) => it.id}
+                        renderRow={(t: any) => (
+                          <div key={t.id} className="card">
+                            <div className="row" style={{ justifyContent: "space-between" }}>
+                              <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                                <Pill text={t.status} />
+                                <span className="badge">{t.stride}</span>
+                                {t.framework ? <span className="badge">{t.frameworkRef ? `${t.frameworkRef}` : t.framework}</span> : null}
+                                <b>{t.title}</b>
+                              </div>
+                              <button className="btn" onClick={() => deleteThreat(t.id)}>Delete</button>
+                            </div>
+
+                            <div className="kv">
+                              <div>
+                                <label className="small muted">Status</label>
+                                <select className="select" value={t.status} onChange={(e) => updateThreat(t.id, { status: e.target.value as ThreatStatus })}>
+                                  {THREAT_STATUSES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="small muted">Owner</label>
+                                <input className="input" value={t.owner || ""} onChange={(e) => updateThreat(t.id, { owner: e.target.value })} />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="small muted">Title</label>
+                              <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="small muted">Description</label>
+                              <textarea className="input" rows={3} value={t.description || ""} onChange={(e) => updateThreat(t.id, { description: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="small muted">Mitigation</label>
+                              <textarea className="input" rows={2} value={t.mitigation || ""} onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })} />
+                            </div>
+
+                            <div className="hr" />
+                            <div className="row" style={{ justifyContent: "space-between" }}>
+                              <b>Evidence</b>
+                              <button className="btn" onClick={() => addEvidenceToThreat(t.id, { author: "", note: prompt("Evidence note:") || "", links: [], status: "draft" as any } as any)}>Add note</button>
+                            </div>
+
+                            {(t.commentary || []).length ? (
+                              <div className="list">
+                                {(t.commentary || []).map((ev: any) => (
+                                  <div key={ev.id} className="item">
+                                    <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                                      <div className="small muted">{ev.createdAt} {ev.author ? "- " + ev.author : ""}</div>
+                                      <select className="select" style={{ maxWidth: 160 }} value={(ev.status || "draft") as any} onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as any })}>
+                                        {EVIDENCE_STATUSES.map((s) => (
+                                          <option key={s} value={s}>{s}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div>{ev.note}</div>
+                                    {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" | ")}</div> : null}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="small muted">No evidence yet.</div>
+                            )}
+                          </div>
+                        )}
+                      />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
       {tab === "findings" && (
         <>
           <div className="card">
