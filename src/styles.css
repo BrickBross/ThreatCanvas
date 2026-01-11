@@ -39,13 +39,19 @@ body, html, #root {
   padding: 0;
   height: 100%;
   font-family: "Inter", "Segoe UI", -apple-system, BlinkMacSystemFont, sans-serif;
-  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 60%);
+  background: radial-gradient(circle at 20% 20%, rgba(45,127,249,0.06), transparent 28%),
+              radial-gradient(circle at 80% 0%, rgba(15,79,227,0.06), transparent 32%),
+              #f9fbff;
   color: var(--fg);
 }
+h1,h2,h3,h4,h5 { font-weight: 700; margin: 0; }
+p { margin: 0 0 10px 0; color: var(--muted); }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
 .layout {
   display: grid;
-  grid-template-columns: 300px 1fr 420px;
+  grid-template-columns: 280px 1fr 420px;
   height: 100vh;
   overflow: hidden;
   gap: 0;
@@ -82,6 +88,7 @@ body, html, #root {
   z-index: 10;
   backdrop-filter: blur(6px);
 }
+.topToolbar .btn { height: 36px; }
 
 .row { display: flex; align-items: center; gap: 8px; }
 .col { display: flex; flex-direction: column; gap: 8px; }
@@ -97,19 +104,22 @@ body, html, #root {
 .item { border: 1px solid var(--border); border-radius: 10px; padding: 10px; }
 .hr { border-bottom: 1px solid var(--border); margin: 10px 0; }
 .tabs { display: flex; flex-wrap: wrap; gap: 6px; position: sticky; top: 0; background: var(--card); padding: 8px 0; z-index: 5; }
-.tab { border: 1px solid var(--border); background: var(--btnBg); color: var(--fg); padding: 6px 10px; border-radius: 8px; cursor: pointer; }
-.tabActive { border-color: var(--accent); color: var(--accent); }
+.tab { border: 1px solid var(--border); background: var(--btnBg); color: var(--fg); padding: 6px 10px; border-radius: 10px; cursor: pointer; }
+.tabActive { border-color: var(--accent); color: var(--accent); background: rgba(45,127,249,0.08); }
 
 .small { font-size: 13px; }
 .tiny { font-size: 11px; }
 .muted { color: var(--muted); }
-.badge { display: inline-flex; align-items: center; padding: 3px 6px; border-radius: 8px; background: var(--hover); color: var(--fg); font-size: 12px; border: 1px solid var(--border2); }
+.badge { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; background: rgba(45,127,249,0.08); color: #0f4fe3; font-size: 12px; border: 1px solid rgba(45,127,249,0.16); }
 
 .input, .select, textarea.input { border: 1px solid var(--border2); background: var(--btnBg); color: var(--fg); padding: 10px 12px; border-radius: 10px; width: 100%; }
 label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px; }
+.input:focus, .select:focus, textarea.input:focus { outline: 2px solid rgba(45,127,249,0.25); border-color: #0f4fe3; }
 
 .paletteSection { padding: 10px; }
 .paletteSection h4 { margin: 6px 0; }
+.paletteSection .item { transition: transform 120ms ease, box-shadow 120ms ease; }
+.paletteSection .item:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.06); }
 .reactflowWrap .react-flow { font-family: inherit; }
 
 .iconBubble{width:26px;height:26px;border:1px solid #e5e5e5;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111}
