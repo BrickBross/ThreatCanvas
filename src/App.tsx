@@ -585,19 +585,19 @@ useEffect(() => {
         style={{ ["--rightWidth" as any]: `${rightWidth}px` }}
       >
       <div className={`sidebar mobilePanel left ${mobileLeftOpen ? "open" : ""}`}>
-        <button className="btn mobileOnly panelClose" onClick={() => setMobileLeftOpen</button>
+        <button className="btn mobileOnly panelClose" onClick={() => setMobileLeftOpen(false)}>Close</button>
         <Palette />
       </div>
 
       <div id="tm-canvas" className="reactflowWrap" ref={wrapRef}>
         <div className="topToolbar">
-          <button className="btn mobileOnly" onClick={() => setMobileLeftOpen</button>
-          <button className="btn mobileOnly" onClick={() => setMobileRightOpen</button>
+          <button className="btn mobileOnly" onClick={() => setMobileLeftOpen(true)}>Tech</button>
+          <button className="btn mobileOnly" onClick={() => setMobileRightOpen(true)}>Panel</button>
           <button className="btn" disabled={!canUndo()} onClick={undo}>Undo</button>
           <button className="btn" disabled={!canRedo()} onClick={redo}>Redo</button>
-          <button className="btn" onClick={onOpen</button>
+          <button className="btn" onClick={onOpenClick}>Open</button>
           <button className="btn" onClick={onSave} disabled={!isDirty && !lastFileName}>Save</button>
-          <button className="btn" onClick={() => setActionsOpen</button>
+          <button className="btn" onClick={() => setActionsOpen(true)}>Actions</button>
         </div>
 
         <Modal open={actionsOpen} title="Actions" onClose={() => setActionsOpen(false)}>
@@ -833,7 +833,7 @@ useEffect(() => {
           }}
           title="Drag to resize"
         />
-        <button className="btn mobileOnly panelClose" onClick={() => setMobileRightOpen</button>
+        <button className="btn mobileOnly panelClose" onClick={() => setMobileRightOpen(false)}>Close</button>
         <RightPanel onOpenSnapshots={openSnapshots} onNavigate={(t) => {
         const st = useTMStore.getState();
 
