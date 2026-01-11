@@ -150,6 +150,43 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
     });
   };
 
+  const addFindingForThreat = (threatId: string, opts?: { addControl?: boolean }) => {
+    const st = useTMStore.getState() as any;
+    const t = (st.model.threats || []).find((x: any) => x.id === threatId);
+    const title = t ? `Finding for threat: ${t.title}` : "Finding for threat";
+
+    let controls: any[] = [];
+    if (opts?.addControl) {
+      const catId = (prompt(`Control category: ${CONTROL_CATEGORIES.map((c) => c.id).join(" | ")}`) || "").trim();
+      const cat = CONTROL_CATEGORIES.find((c) => c.id === catId) || CONTROL_CATEGORIES[0];
+      const vendor = (prompt(`Vendor (optional). Examples: ${(cat.vendors || []).slice(0, 5).map((v) => v.name).join(", ")}`) || "").trim();
+      controls = [
+        {
+          id: crypto.randomUUID(),
+          category: cat.id,
+          vendor,
+          providedControl: "",
+          coverage: "partial",
+          notes: ""
+        }
+      ];
+    }
+
+    const fid = addFinding({
+      title,
+      description: "",
+      status: "proposed",
+      owner: "",
+      evidence: [],
+      relatedThreatIds: [threatId],
+      compensatingControls: controls
+    } as any);
+
+    const nextIds = Array.from(new Set([...(t?.findingIds || []), fid]));
+    updateThreat(threatId, { findingIds: nextIds } as any);
+    setTab("findings");
+  };
+
   const threatsAll = model.threats || [];
   const threatSummary = useMemo(() => {
     const total = threatsAll.length;
@@ -226,9 +263,6 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
         </button>
         <button className={tab === "help" ? "tab tabActive" : "tab"} onClick={() => setTab("help")}>
           Help
-        </button>
-        <button className={tab === "privacy" ? "tab tabActive" : "tab"} onClick={() => setTab("privacy")}>
-          Privacy
         </button>
       </div>
 
@@ -825,6 +859,25 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                             </div>
 
                             <div className="hr" />
+                            <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                              <b>Compensating controls</b>
+                              <div className="row" style={{ gap: 8 }}>
+                                <button className="btn" onClick={() => addFindingForThreat(t.id)}>Add finding</button>
+                                <button className="btn" onClick={() => addFindingForThreat(t.id, { addControl: true })}>Add control</button>
+                              </div>
+                            </div>
+                            <div className="small muted">
+                              Controls are recorded on Findings. Use “Add control” to create a linked finding pre-seeded with a control category (EDR/NDR/SIEM/etc).
+                            </div>
+                            {(t.findingIds || []).length ? (
+                              <div className="small muted" style={{ marginTop: 6 }}>
+                                Linked findings: {(t.findingIds || []).slice(0, 6).join(", ")}{(t.findingIds || []).length > 6 ? "…" : ""}
+                              </div>
+                            ) : (
+                              <div className="small muted" style={{ marginTop: 6 }}>No linked findings yet.</div>
+                            )}
+
+                            <div className="hr" />
                             <div className="row" style={{ justifyContent: "space-between" }}>
                               <b>Evidence</b>
                               <button className="btn" onClick={() => addEvidenceToThreat(t.id, { author: "", note: prompt("Evidence note:") || "", links: [], status: "draft" as any } as any)}>Add note</button>
@@ -929,6 +982,34 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
         />
       )}
 
+      {tab === "timeline" && (
+        <div className="card">
+          <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+            <div className="cardTitle">Timeline</div>
+            <span className="badge">{(model.audit || []).length}</span>
+          </div>
+          <div className="small muted">Recent model activity (stored locally).</div>
+          <div className="hr" />
+          {(model.audit || []).length ? (
+            <div className="list">
+              {(model.audit || []).slice().reverse().slice(0, 150).map((ev: any) => (
+                <div key={ev.id} className="item">
+                  <div className="row" style={{ justifyContent: "space-between" }}>
+                    <b>{ev.summary || ev.type}</b>
+                    <span className="badge">{ev.type}</span>
+                  </div>
+                  <div className="small muted">{ev.at}</div>
+                  {ev.entity ? <div className="tiny muted">{ev.entity.kind}:{ev.entity.id}</div> : null}
+                </div>
+              ))}
+              {(model.audit || []).length > 150 ? <div className="small muted">Showing latest 150 events.</div> : null}
+            </div>
+          ) : (
+            <div className="small muted">No activity yet.</div>
+          )}
+        </div>
+      )}
+
       {tab === "validation" && (
         <div className="card">
           <div className="cardTitle">Validation</div>
@@ -953,16 +1034,6 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
       )}
 
       {tab === "help" && <HelpCard />}
-
-      {tab === "privacy" && (
-        <div className="card">
-          <div className="cardTitle">Privacy + Security</div>
-          <div className="small muted">
-            ThreatCanvas runs fully in your browser. No data leaves the page and no backend calls are made. Save models locally as
-            .tm.json, and delete browser storage anytime via your browser settings.
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1270,7 +1341,9 @@ function Dashboard({ threatsAll, threatRiskCell, setThreatRiskCell, findings }: 
           const byCat: Record<string, { threats: Set<string>; partial: number; complete: number; unknown: number }> = {};
           for (const f of findings as any[]) {
             const controls = (f.compensatingControls || []) as any[];
-            const linkedThreats = new Set<string>((f.threatIds || f.linkedThreatIds || []) as any);
+            const linkedThreats = new Set<string>(
+              ((f.relatedThreatIds || f.threatIds || f.linkedThreatIds || []) as any[]).filter(Boolean)
+            );
             for (const t of threatsAll as any[]) {
               if ((t.findingIds || []).includes(f.id)) linkedThreats.add(t.id);
             }

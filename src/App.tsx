@@ -576,6 +576,14 @@ useEffect(() => {
                 </label>
               </div>
             </div>
+
+            <div className="card">
+              <div className="cardTitle">Privacy</div>
+              <div className="small muted">
+                ThreatCanvas runs fully in your browser. No data leaves the page and no backend calls are made. Save models locally as
+                .tm.json, and delete browser storage anytime via your browser settings.
+              </div>
+            </div>
           </div>
         </Modal>
 

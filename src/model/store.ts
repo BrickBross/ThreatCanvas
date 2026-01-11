@@ -38,7 +38,7 @@ type Store = {
   // selections
   selectedNodeId: string | null;
   selectedEdgeId: string | null;
-  uiTab: "properties" | "threats" | "findings" | "validation" | "help";
+  uiTab: "properties" | "threats" | "findings" | "dashboard" | "timeline" | "validation" | "help";
   setUiTab: (t: any) => void;
   frameworkSelections: string[];
   setFrameworkSelections: (ids: string[]) => void;
