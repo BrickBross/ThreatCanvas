@@ -106,6 +106,9 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
   const groupBy = useTMStore((s) => (s as any).uiThreatGroupBy) as "none" | "framework" | "status" | "owner";
   const setGroupBy = useTMStore((s) => (s as any).setUiThreatGroupBy) as (v: any) => void;
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [collapsedThreatItems, setCollapsedThreatItems] = useState<Record<string, boolean>>({});
+  const toggleThreatItem = (id: string) =>
+    setCollapsedThreatItems((s) => ({ ...s, [id]: !(s[id] ?? true) }));
 
   const nodes = model.nodes as any[];
   const edges = model.edges as any[];
@@ -480,7 +483,9 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               <div className="cardTitle">STRIDE (auto)</div>
               <span className="badge">{autoStrideThreats.length}</span>
             </div>
-            <div className="small muted">Auto-generated STRIDE findings based on node type, flows, and basic properties.</div>
+            <div className="small muted">
+              Auto-generated STRIDE findings based on node type, flows, and basic properties. These appear in the Threat list under the STRIDE group.
+            </div>
             <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               <button
                 className="btn"
@@ -495,27 +500,11 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               </button>
               <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear framework filter</button>
             </div>
-            {autoStrideThreats.length ? (
-              <div className="list" style={{ marginTop: 10 }}>
-                {autoStrideThreats.slice(0, 6).map((t: any) => (
-                  <div key={t.id} className="item">
-                    <div className="row" style={{ justifyContent: "space-between" }}>
-                      <div className="row" style={{ gap: 8, alignItems: "center" }}>
-                        <span className="badge">{t.stride}</span>
-                        <b>{t.title}</b>
-                      </div>
-                      <span className="badge">{t.status}</span>
-                    </div>
-                    <div className="small muted">{t.frameworkRef}</div>
-                  </div>
-                ))}
-                {autoStrideThreats.length > 6 ? <div className="small muted">Showing first 6.</div> : null}
-              </div>
-            ) : (
+            {!autoStrideThreats.length ? (
               <div className="small muted" style={{ marginTop: 10 }}>
                 No auto STRIDE findings yet. Enable Auto STRIDE in Actions and add services/flows.
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="card">
@@ -534,8 +523,9 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               <div className="small">Has verified evidence: {threatSummary.verifiedEvidence}</div>
             </div>
             <div className="hr" />
-            <div className="small muted"><b>Generate threats from libraries</b></div>
-            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <details className="details">
+              <summary className="small muted"><b>Generate threats from libraries</b></summary>
+              <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <select
                 className="select"
                 multiple
@@ -627,71 +617,75 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                 </div>
               </div>
             </div>
+            </details>
           </div>
 
           <div className="card">
-            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <span className="small muted">Saved views:</span>
-              <select
-                className="select"
-                style={{ maxWidth: 240 }}
-                value=""
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v) applyView(v);
-                }}
-              >
-                <option value="">Apply.</option>
-                {(savedViews || []).map((v: any) => (
-                  <option key={v.id} value={v.id}>
-                    {v.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="btn"
-                onClick={() => {
-                  const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim();
-                  if (name) saveView(name);
-                }}
-              >
-                Save view
-              </button>
-              <button
-                className="btn"
-                onClick={() => {
-                  const name = (prompt("Delete view by name (exact):") || "").trim();
-                  const v = (savedViews || []).find((x: any) => x.name === name);
-                  if (v) deleteView(v.id);
-                }}
-              >
-                Delete view
-              </button>
+            <details className="details">
+              <summary className="small muted"><b>Saved views & filters</b></summary>
+              <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 8 }}>
+                <span className="small muted">Saved views:</span>
+                <select
+                  className="select"
+                  style={{ maxWidth: 240 }}
+                  value=""
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v) applyView(v);
+                  }}
+                >
+                  <option value="">Apply.</option>
+                  {(savedViews || []).map((v: any) => (
+                    <option key={v.id} value={v.id}>
+                      {v.name}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim();
+                    if (name) saveView(name);
+                  }}
+                >
+                  Save view
+                </button>
+                <button
+                  className="btn"
+                  onClick={() => {
+                    const name = (prompt("Delete view by name (exact):") || "").trim();
+                    const v = (savedViews || []).find((x: any) => x.name === name);
+                    if (v) deleteView(v.id);
+                  }}
+                >
+                  Delete view
+                </button>
 
-              <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
-              <select
-                className="select"
-                style={{ maxWidth: 240 }}
-                value=""
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v) applyThreatFilter(v);
-                }}
-              >
-                <option value="">Apply.</option>
-                {(savedThreatFilters || []).map((f: any) => (
-                  <option key={f.id} value={f.id}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-              <button className="btn" onClick={() => { const name = prompt("Name this saved filter:") || ""; if (name.trim()) saveThreatFilter(name.trim()); }}>
-                Save current
-              </button>
-              <button className="btn" onClick={() => { const name = prompt("Delete saved filter by name (exact):") || ""; const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim()); if (f) deleteThreatFilter(f.id); }}>
-                Delete filter
-              </button>
-            </div>
+                <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
+                <select
+                  className="select"
+                  style={{ maxWidth: 240 }}
+                  value=""
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (v) applyThreatFilter(v);
+                  }}
+                >
+                  <option value="">Apply.</option>
+                  {(savedThreatFilters || []).map((f: any) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+                <button className="btn" onClick={() => { const name = prompt("Name this saved filter:") || ""; if (name.trim()) saveThreatFilter(name.trim()); }}>
+                  Save current
+                </button>
+                <button className="btn" onClick={() => { const name = prompt("Delete saved filter by name (exact):") || ""; const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim()); if (f) deleteThreatFilter(f.id); }}>
+                  Delete filter
+                </button>
+              </div>
+            </details>
 
             <div className="hr" />
             <div className="small muted"><b>Status filter</b></div>
@@ -797,7 +791,15 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
           </div>
 
           <div className="list" style={{ marginTop: 10 }}>
-            {Object.entries(groupedThreats).map(([gk, items]) => {
+            {Object.entries(groupedThreats)
+              .sort(([a], [b]) => {
+                if (groupBy === "framework") {
+                  if (a === "STRIDE" && b !== "STRIDE") return -1;
+                  if (b === "STRIDE" && a !== "STRIDE") return 1;
+                }
+                return String(a).localeCompare(String(b));
+              })
+              .map(([gk, items]) => {
               const title = groupBy === "framework" ? (FRAMEWORKS.find((f) => f.id === gk)?.name || gk) : gk;
               const isCollapsed = !!collapsedGroups[gk];
               return (
@@ -813,15 +815,15 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                   </div>
                   {!isCollapsed ? (
                     <div className="list" style={{ marginTop: 10 }}>
-                      <VirtualList
-                        items={items.slice(0, 200)}
-                        rowHeight={360}
-                        height={Math.min(900, 360 * Math.min(items.length, 2.5))}
-                        getKey={(it: any) => it.id}
-                        renderRow={(t: any) => (
+                      {items.slice(0, 200).map((t: any) => {
+                        const isThreatCollapsed = collapsedThreatItems[t.id] ?? true;
+                        return (
                           <div key={t.id} className="card">
                             <div className="row" style={{ justifyContent: "space-between" }}>
                               <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                                <button className="btn" onClick={() => toggleThreatItem(t.id)} title={isThreatCollapsed ? "Expand" : "Collapse"}>
+                                  {isThreatCollapsed ? "+" : "-"}
+                                </button>
                                 <Pill text={t.status} />
                                 <span className="badge">{t.stride}</span>
                                 {t.framework ? <span className="badge">{t.frameworkRef ? `${t.frameworkRef}` : t.framework}</span> : null}
@@ -830,82 +832,92 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                               <button className="btn" onClick={() => deleteThreat(t.id)}>Delete</button>
                             </div>
 
-                            <div className="kv">
-                              <div>
-                                <label className="small muted">Status</label>
-                                <select className="select" value={t.status} onChange={(e) => updateThreat(t.id, { status: e.target.value as ThreatStatus })}>
-                                  {THREAT_STATUSES.map((s) => (
-                                    <option key={s} value={s}>{s}</option>
-                                  ))}
-                                </select>
-                              </div>
-                              <div>
-                                <label className="small muted">Owner</label>
-                                <input className="input" value={t.owner || ""} onChange={(e) => updateThreat(t.id, { owner: e.target.value })} />
-                              </div>
-                            </div>
-
-                            <div>
-                              <label className="small muted">Title</label>
-                              <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
-                            </div>
-                            <div>
-                              <label className="small muted">Description</label>
-                              <textarea className="input" rows={3} value={t.description || ""} onChange={(e) => updateThreat(t.id, { description: e.target.value })} />
-                            </div>
-                            <div>
-                              <label className="small muted">Mitigation</label>
-                              <textarea className="input" rows={2} value={t.mitigation || ""} onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })} />
-                            </div>
-
-                            <div className="hr" />
-                            <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                              <b>Compensating controls</b>
-                              <div className="row" style={{ gap: 8 }}>
-                                <button className="btn" onClick={() => addFindingForThreat(t.id)}>Add finding</button>
-                                <button className="btn" onClick={() => addFindingForThreat(t.id, { addControl: true })}>Add control</button>
-                              </div>
-                            </div>
-                            <div className="small muted">
-                              Controls are recorded on Findings. Use “Add control” to create a linked finding pre-seeded with a control category (EDR/NDR/SIEM/etc).
-                            </div>
-                            {(t.findingIds || []).length ? (
+                            {isThreatCollapsed ? (
                               <div className="small muted" style={{ marginTop: 6 }}>
-                                Linked findings: {(t.findingIds || []).slice(0, 6).join(", ")}{(t.findingIds || []).length > 6 ? "…" : ""}
+                                {String(t.description || "").slice(0, 180)}
+                                {String(t.description || "").length > 180 ? "..." : ""}
                               </div>
                             ) : (
-                              <div className="small muted" style={{ marginTop: 6 }}>No linked findings yet.</div>
-                            )}
-
-                            <div className="hr" />
-                            <div className="row" style={{ justifyContent: "space-between" }}>
-                              <b>Evidence</b>
-                              <button className="btn" onClick={() => addEvidenceToThreat(t.id, { author: "", note: prompt("Evidence note:") || "", links: [], status: "draft" as any } as any)}>Add note</button>
-                            </div>
-
-                            {(t.commentary || []).length ? (
-                              <div className="list">
-                                {(t.commentary || []).map((ev: any) => (
-                                  <div key={ev.id} className="item">
-                                    <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                                      <div className="small muted">{ev.createdAt} {ev.author ? "- " + ev.author : ""}</div>
-                                      <select className="select" style={{ maxWidth: 160 }} value={(ev.status || "draft") as any} onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as any })}>
-                                        {EVIDENCE_STATUSES.map((s) => (
-                                          <option key={s} value={s}>{s}</option>
-                                        ))}
-                                      </select>
-                                    </div>
-                                    <div>{ev.note}</div>
-                                    {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" | ")}</div> : null}
+                              <>
+                                <div className="kv">
+                                  <div>
+                                    <label className="small muted">Status</label>
+                                    <select className="select" value={t.status} onChange={(e) => updateThreat(t.id, { status: e.target.value as ThreatStatus })}>
+                                      {THREAT_STATUSES.map((s) => (
+                                        <option key={s} value={s}>{s}</option>
+                                      ))}
+                                    </select>
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className="small muted">No evidence yet.</div>
+                                  <div>
+                                    <label className="small muted">Owner</label>
+                                    <input className="input" value={t.owner || ""} onChange={(e) => updateThreat(t.id, { owner: e.target.value })} />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <label className="small muted">Title</label>
+                                  <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="small muted">Description</label>
+                                  <textarea className="input" rows={3} value={t.description || ""} onChange={(e) => updateThreat(t.id, { description: e.target.value })} />
+                                </div>
+                                <div>
+                                  <label className="small muted">Mitigation</label>
+                                  <textarea className="input" rows={2} value={t.mitigation || ""} onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })} />
+                                </div>
+
+                                <div className="hr" />
+                                <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                                  <b>Compensating controls</b>
+                                  <div className="row" style={{ gap: 8 }}>
+                                    <button className="btn" onClick={() => addFindingForThreat(t.id)}>Add finding</button>
+                                    <button className="btn" onClick={() => addFindingForThreat(t.id, { addControl: true })}>Add control</button>
+                                  </div>
+                                </div>
+                                <div className="small muted">
+                                  Controls are recorded on Findings. Use "Add control" to create a linked finding pre-seeded with a control category (EDR/NDR/SIEM/etc).
+                                </div>
+                                {(t.findingIds || []).length ? (
+                                  <div className="small muted" style={{ marginTop: 6 }}>
+                                    Linked findings: {(t.findingIds || []).slice(0, 6).join(", ")}{(t.findingIds || []).length > 6 ? "..." : ""}
+                                  </div>
+                                ) : (
+                                  <div className="small muted" style={{ marginTop: 6 }}>No linked findings yet.</div>
+                                )}
+
+                                <div className="hr" />
+                                <div className="row" style={{ justifyContent: "space-between" }}>
+                                  <b>Evidence</b>
+                                  <button className="btn" onClick={() => addEvidenceToThreat(t.id, { author: "", note: prompt("Evidence note:") || "", links: [], status: "draft" as any } as any)}>Add note</button>
+                                </div>
+
+                                {(t.commentary || []).length ? (
+                                  <div className="list">
+                                    {(t.commentary || []).map((ev: any) => (
+                                      <div key={ev.id} className="item">
+                                        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                                          <div className="small muted">{ev.createdAt} {ev.author ? "- " + ev.author : ""}</div>
+                                          <select className="select" style={{ maxWidth: 160 }} value={(ev.status || "draft") as any} onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as any })}>
+                                            {EVIDENCE_STATUSES.map((s) => (
+                                              <option key={s} value={s}>{s}</option>
+                                            ))}
+                                          </select>
+                                        </div>
+                                        <div>{ev.note}</div>
+                                        {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" | ")}</div> : null}
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <div className="small muted">No evidence yet.</div>
+                                )}
+                              </>
                             )}
                           </div>
-                        )}
-                      />
+                        );
+                      })}
+                      {items.length > 200 ? <div className="small muted">Showing first 200.</div> : null}
                     </div>
                   ) : null}
                 </div>

@@ -136,11 +136,29 @@ export default function App() {
     const t = window.setTimeout(() => {
       const st = useTMStore.getState() as any;
       const m = st.model as any;
-      const existing = new Set((m.threats || []).map((x: any) => x.frameworkRef).filter(Boolean));
+      const threatsAll = (m.threats || []) as any[];
+      const manual = threatsAll.filter((x) => !String(x.frameworkRef || "").startsWith("STRIDE_AUTO"));
+      const existingAuto = new Map<string, any>();
+      for (const t0 of threatsAll) {
+        const ref = String(t0.frameworkRef || "");
+        if (ref.startsWith("STRIDE_AUTO")) existingAuto.set(ref, t0);
+      }
+
       const generated = generateStrideAuto(m);
-      const toAdd = generated.filter((x: any) => x.frameworkRef && !existing.has(x.frameworkRef));
-      if (!toAdd.length) return;
-      st.setThreats([...(m.threats || []), ...toAdd]);
+      const mergedAuto = generated.map((g: any) => {
+        const prev = existingAuto.get(String(g.frameworkRef || ""));
+        if (!prev) return g;
+        return {
+          ...g,
+          status: prev.status ?? g.status,
+          owner: prev.owner ?? g.owner,
+          mitigation: prev.mitigation ?? g.mitigation,
+          commentary: prev.commentary ?? g.commentary,
+          findingIds: prev.findingIds ?? g.findingIds
+        };
+      });
+
+      st.setThreats([...manual, ...mergedAuto]);
     }, 200);
     return () => window.clearTimeout(t);
   }, [autoStrideEnabled, model.nodes, model.edges]);
