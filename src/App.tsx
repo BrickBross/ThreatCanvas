@@ -609,9 +609,6 @@ useEffect(() => {
                 <button className="btn" onClick={onSave} disabled={!isDirty && !lastFileName}>Save</button>
                 <button className="btn" onClick={onSaveAs}>Save As</button>
                 <button className="btn" onClick={() => setTemplatesOpen(true)}>Templates</button>
-                <button className="btn" onClick={autoLayout} title="Arrange nodes in a readable left-to-right flow and tidy flows">
-                  Auto-align
-                </button>
               </div>
               <div className="hr" />
               <div className="row" style={{ flexWrap: "wrap", alignItems: "center" }}>
@@ -623,6 +620,9 @@ useEffect(() => {
                 </button>
                 <button className="btn" title="Redact labels in exports" onClick={() => setRedactExport(!redactExport)}>
                   Redact: {redactExport ? "on" : "off"}
+                </button>
+                <button className="btn" onClick={autoLayout} title="Arrange nodes in a readable left-to-right flow and tidy flows">
+                  Auto-align
                 </button>
               </div>
             </div>

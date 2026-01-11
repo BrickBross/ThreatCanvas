@@ -1,4 +1,4 @@
-export const SERVICE_CATALOG = [
+const SERVICE_CATALOG_RAW = [
   {
     "provider": "saas",
     "category": "Identity & Access",
@@ -3374,3 +3374,16 @@ export const SERVICE_CATALOG = [
     "iconKey": "onprem:On-Prem"
   }
 ] as const;
+
+const PROVIDER_ORDER: Record<string, number> = { aws: 0, azure: 1, gcp: 2, saas: 3, onprem: 4 };
+
+export const SERVICE_CATALOG = [...SERVICE_CATALOG_RAW].sort((a, b) => {
+  const ap = PROVIDER_ORDER[a.provider] ?? 99;
+  const bp = PROVIDER_ORDER[b.provider] ?? 99;
+  if (ap !== bp) return ap - bp;
+  const ac = String(a.category || "");
+  const bc = String(b.category || "");
+  const cc = ac.localeCompare(bc, undefined, { sensitivity: "base" });
+  if (cc !== 0) return cc;
+  return String(a.name || "").localeCompare(String(b.name || ""), undefined, { sensitivity: "base" });
+}) as Array<(typeof SERVICE_CATALOG_RAW)[number]>;
