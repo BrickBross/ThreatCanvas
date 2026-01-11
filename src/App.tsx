@@ -118,8 +118,9 @@ export default function App() {
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
   useEffect(() => {
-    document.body.classList.remove("themeLight", "themeDark");
-    document.body.classList.add(theme === "dark" ? "themeDark" : "themeLight");
+    document.documentElement.classList.toggle("light-mode", theme === "light");
+    document.body.classList.toggle("themeDark", theme === "dark");
+    document.body.classList.toggle("themeLight", theme === "light");
   }, [theme]);
 
   useEffect(() => {

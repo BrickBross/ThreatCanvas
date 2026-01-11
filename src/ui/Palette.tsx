@@ -32,7 +32,8 @@ function DraggableItem({ kind, payload, label, icon }: { kind: NodeKind; payload
 
 export function Palette() {
   const [q, setQ] = useState("");
-  const [provider, setProvider] = useState<string>("all");
+  const theme = useTMStore((s) => (s as any).theme) as "light" | "dark";
+  const setTheme = useTMStore((s) => (s as any).setTheme) as (t: "light" | "dark") => void;
 
   const createProject = useTMStore((s) => s.createProject);
   const openProject = useTMStore((s) => s.openProject);
@@ -45,124 +46,109 @@ export function Palette() {
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return SERVICE_CATALOG.filter((s) => {
-      if (provider !== "all" && s.provider !== provider) return false;
       if (!qq) return true;
       return s.name.toLowerCase().includes(qq) || s.category.toLowerCase().includes(qq);
     });
-  }, [q, provider]);
+  }, [q]);
 
-  const cats = useMemo(() => {
-    const map = new Map<string, typeof SERVICE_CATALOG>();
-    for (const s of filtered) {
-      const k = `${s.provider} › ${s.category}`;
-      if (!map.has(k)) map.set(k, [] as any);
-      (map.get(k) as any).push(s);
+  const servicesByProvider = useMemo(() => {
+    const providers = ["aws", "azure", "gcp", "saas", "onprem"] as const;
+    const out = new Map<string, typeof SERVICE_CATALOG>();
+    for (const p of providers) out.set(p, [] as any);
+    for (const s of filtered) (out.get(s.provider) as any)?.push(s);
+    for (const [p, list] of out.entries()) {
+      list.sort((a: any, b: any) => (a.category + a.name).localeCompare(b.category + b.name));
     }
-    const arr = Array.from(map.entries());
-    const pin = (k: string) => {
-      const lk = k.toLowerCase();
-      if (lk.includes("security")) return 0;
-      if (lk.includes("siem") || lk.includes("logging")) return 1;
-      if (lk.includes("identity") || lk.includes("access")) return 2;
-      return 3;
-    };
-    arr.sort((a, b) => {
-      const pa = pin(a[0]);
-      const pb = pin(b[0]);
-      if (pa !== pb) return pa - pb;
-      return a[0].localeCompare(b[0]);
-    });
-    return arr;
+    return out;
   }, [filtered]);
 
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ aws: true });
+
   return (
-    <div className="col palette">
-      <div className="brand">
-        <div className="brandTitle">ThreatCanvas</div>
-        <div className="small muted">Client-side threat modeling · no backend</div>
-      </div>
-
-      <div className="card paletteSection">
-        <div className="cardTitle">Projects</div>
-        <div className="row">
-          <select className="select" value={projectId ?? ""} onChange={(e) => openProject(e.target.value)}>
-            {projects.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="row" style={{ flexWrap: "wrap" }}>
-          <button className="btn" onClick={() => createProject(prompt("Project name?") || "New project")}>
-            New
+    <div className="tech-palette">
+      <div className="palette-header">
+        <h2>Technologies</h2>
+        <input className="search-input" placeholder="Search services..." value={q} onChange={(e) => setQ(e.target.value)} />
+        <div className="row" style={{ marginTop: 10, justifyContent: "space-between" }}>
+          <button className="btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+            Theme: {theme === "dark" ? "Dark" : "Light"}
           </button>
-          <button
-            className="btn"
-            onClick={() => {
-              const p = projects.find((x) => x.id === projectId);
-              if (!p) return;
-              renameProject(p.id, prompt("Rename project:", p.name) || p.name);
-            }}
-          >
-            Rename
-          </button>
-          <button className="btn" onClick={() => projectId && duplicateProject(projectId)}>
-            Duplicate
-          </button>
-          <button className="btn" onClick={() => projectId && confirm("Delete this project?") && deleteProject(projectId)}>
-            Delete
-          </button>
-        </div>
-        <div className="small muted">Stored locally in your browser.</div>
-      </div>
-
-      <div className="card paletteSection">
-        <div className="cardTitle">Shapes</div>
-        <div className="list">
-          <DraggableItem kind="process" payload={{ type: "basic", kind: "process" }} label="Process" />
-          <DraggableItem kind="datastore" payload={{ type: "basic", kind: "datastore" }} label="Data store" />
-          <DraggableItem kind="external" payload={{ type: "basic", kind: "external" }} label="External entity" />
-          <DraggableItem kind="trustBoundary" payload={{ type: "basic", kind: "trustBoundary" }} label="Trust boundary" />
+          <span className="small muted">{projects.length} projects</span>
         </div>
       </div>
 
-      <div className="card paletteSection">
-        <div className="cardTitle">Service catalog</div>
-        <input className="input" placeholder="Search services..." value={q} onChange={(e) => setQ(e.target.value)} />
-        <div className="row">
-          <select className="select" value={provider} onChange={(e) => setProvider(e.target.value)}>
-            <option value="all">All providers</option>
-            <option value="aws">AWS</option>
-            <option value="azure">Azure</option>
-            <option value="gcp">GCP</option>
-            <option value="saas">SaaS</option>
-            <option value="onprem">On-prem</option>
-          </select>
+      <div className="palette-content">
+        <div className="card paletteSection" style={{ marginBottom: 12 }}>
+          <div className="cardTitle">Projects</div>
+          <div className="row">
+            <select className="select" value={projectId ?? ""} onChange={(e) => openProject(e.target.value)}>
+              {projects.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="row" style={{ flexWrap: "wrap" }}>
+            <button className="btn" onClick={() => createProject(prompt("Project name?") || "New project")}>New</button>
+            <button className="btn" onClick={() => { const p = projects.find((x) => x.id === projectId); if (!p) return; renameProject(p.id, prompt("Rename project:", p.name) || p.name); }}>Rename</button>
+            <button className="btn" onClick={() => projectId && duplicateProject(projectId)}>Duplicate</button>
+            <button className="btn" onClick={() => projectId && confirm("Delete this project?") && deleteProject(projectId)}>Delete</button>
+          </div>
         </div>
-        <div className="small muted">Drag a service onto the canvas.</div>
-        <div className="hr" />
-        <div className="list">
-          {cats.slice(0, 40).map(([k, items]) => (
-            <details key={k} open={k.toLowerCase().includes("security")}>
-              <summary className="small" style={{ cursor: "pointer" }}>
-                {k} <span className="muted">({items.length})</span>
-              </summary>
-              <div className="list" style={{ marginTop: 8 }}>
-                {items.slice(0, 50).map((s) => (
-                  <DraggableItem
-                    key={s.id}
-                    kind={s.kind}
-                    payload={{ type: "service", kind: s.kind, serviceId: s.id }}
-                    label={s.name}
-                    icon={<ServiceIcon provider={s.provider} category={s.category} name={s.name} />}
-                  />
-                ))}
-              </div>
-            </details>
-          ))}
-          {cats.length > 40 ? <div className="small muted">Showing first 40 categories; refine search to narrow.</div> : null}
+
+        <div className="card paletteSection" style={{ marginBottom: 12 }}>
+          <div className="cardTitle">Shapes</div>
+          <div className="list">
+            <DraggableItem kind="process" payload={{ type: "basic", kind: "process" }} label="Process" />
+            <DraggableItem kind="datastore" payload={{ type: "basic", kind: "datastore" }} label="Data store" />
+            <DraggableItem kind="external" payload={{ type: "basic", kind: "external" }} label="External entity" />
+            <DraggableItem kind="trustBoundary" payload={{ type: "basic", kind: "trustBoundary" }} label="Trust boundary" />
+          </div>
         </div>
+
+        {Array.from(servicesByProvider.entries()).map(([prov, list]) => {
+          if (!list.length) return null;
+          const isOpen = !!expanded[prov] || q.trim().length > 0;
+          return (
+            <div key={prov} className="provider-section">
+              <button
+                className={`provider-header provider-${prov}`}
+                onClick={() => setExpanded((s) => ({ ...s, [prov]: !s[prov] }))}
+              >
+                <span className="provider-name">{prov.toUpperCase()}</span>
+                <span className="provider-count">{list.length}</span>
+                <span className={`chevron ${isOpen ? "expanded" : ""}`}>▶</span>
+              </button>
+              {isOpen ? (
+                <div className="tech-list">
+                  {list.slice(0, 200).map((s: any) => (
+                    <div
+                      key={s.id}
+                      className="tech-item"
+                      draggable
+                      onDragStart={(e) => {
+                        const payload: DragPayload = { type: "service", kind: s.kind, serviceId: s.id };
+                        e.dataTransfer.setData("application/x-tm", JSON.stringify(payload));
+                        e.dataTransfer.effectAllowed = "copy";
+                      }}
+                      title="Drag to canvas"
+                    >
+                      <div className="row" style={{ justifyContent: "space-between" }}>
+                        <div className="row" style={{ minWidth: 0 }}>
+                          <ServiceIcon provider={s.provider} category={s.category} name={s.name} />
+                          <div className="tech-item-name">{s.name}</div>
+                        </div>
+                        <span className="badge">{s.kind}</span>
+                      </div>
+                      <div className="tech-item-category">{s.category}</div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

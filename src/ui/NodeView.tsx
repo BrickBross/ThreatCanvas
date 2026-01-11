@@ -8,7 +8,7 @@ export function NodeView({ data, selected }: { data: TMNodeData; selected: boole
   const label = data.label || "(unnamed)";
 
   return (
-    <div className="card nodeCard">
+    <div className="card nodeCard" style={{ width: "100%", height: "100%" }}>
       <NodeResizer
         isVisible={selected}
         minWidth={160}
