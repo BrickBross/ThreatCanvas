@@ -1247,11 +1247,11 @@ function HelpCard() {
         <div>
           <b>Status guidance</b>
           <div className="small muted">
-            Threats: open -> in_analysis -> mitigated/accepted -> verified (or rejected)
+            Threats: open → in_analysis → mitigated/accepted → verified (or rejected)
             <br />
-            Findings: proposed -> in_review -> remediation_planned -> remediated -> verified (or accepted/rejected)
+            Findings: proposed → in_review → remediation_planned → remediated → verified (or accepted/rejected)
             <br />
-            Evidence: draft -> submitted -> reviewed -> verified (or superseded/rejected)
+            Evidence: draft → submitted → reviewed → verified (or superseded/rejected)
           </div>
         </div>
 
