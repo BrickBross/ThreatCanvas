@@ -92,6 +92,8 @@ export default function App() {
   const exportJson = useTMStore((s) => s.exportJson);
   const importJsonFile = useTMStore((s) => s.importJsonFile);
   const setThreats = useTMStore((s) => s.setThreats);
+  const hasOnboarded = useTMStore((s) => (s as any).hasOnboarded);
+  const setHasOnboarded = useTMStore((s) => (s as any).setHasOnboarded);
 
   const [snapOpen, setSnapOpen] = useState(false);
   const [snaps, setSnaps] = useState<any[]>([]);
@@ -109,6 +111,8 @@ export default function App() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQ, setSearchQ] = useState("");
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [presentationMode, setPresentationMode] = useState(false);
   const isMac = navigator.platform.toLowerCase().includes("mac");
 
   const onOpenClick = () => fileInputRef.current?.click();
@@ -292,7 +296,7 @@ const onEvidencePack = () => {
   };
 /* docflow-beforeunload */
 useEffect(() => {
-    if (!hasOnboarded) setShowOnboarding(true);
+  if (!hasOnboarded) setShowOnboarding(true);
 
   const onBeforeUnload = (e: BeforeUnloadEvent) => {
     if (!isDirty) return;
@@ -301,7 +305,7 @@ useEffect(() => {
   };
   window.addEventListener("beforeunload", onBeforeUnload);
   return () => window.removeEventListener("beforeunload", onBeforeUnload);
-}, [isDirty]);
+}, [isDirty, hasOnboarded]);
 
 
 
@@ -362,31 +366,34 @@ useEffect(() => {
     };
     window.addEventListener("keydown", onKey);
 
-const onDel = (e: KeyboardEvent) => {
-  if (e.key !== "Delete" && e.key !== "Backspace") return;
-  const active = document.activeElement as HTMLElement | null;
-  if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
+    const onDel = (e: KeyboardEvent) => {
+      if (e.key !== "Delete" && e.key !== "Backspace") return;
+      const active = document.activeElement as HTMLElement | null;
+      if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) return;
 
-  const st = useTMStore.getState();
-  const nid = st.selectedNodeId;
-  const eid = st.selectedEdgeId;
-  if (nid) {
-    if (!confirm("Delete selected node?")) return;
-    st.commitHistory();
-    st.setNodes((st.model.nodes as any[]).filter((n) => n.id !== nid) as any);
-    st.setEdges((st.model.edges as any[]).filter((ed) => ed.source !== nid && ed.target !== nid) as any);
-    st.selectNode(null);
-  } else if (eid) {
-    if (!confirm("Delete selected edge?")) return;
-    st.commitHistory();
-    st.setEdges((st.model.edges as any[]).filter((ed) => ed.id !== eid) as any);
-    st.selectEdge(null);
-  }
-};
-window.addEventListener("keydown", onDel);
+      const st = useTMStore.getState();
+      const nid = st.selectedNodeId;
+      const eid = st.selectedEdgeId;
+      if (nid) {
+        if (!confirm("Delete selected node?")) return;
+        st.commitHistory();
+        st.setNodes((st.model.nodes as any[]).filter((n) => n.id !== nid) as any);
+        st.setEdges((st.model.edges as any[]).filter((ed) => ed.source !== nid && ed.target !== nid) as any);
+        st.selectNode(null);
+      } else if (eid) {
+        if (!confirm("Delete selected edge?")) return;
+        st.commitHistory();
+        st.setEdges((st.model.edges as any[]).filter((ed) => ed.id !== eid) as any);
+        st.selectEdge(null);
+      }
+    };
+
+    window.addEventListener("keydown", onDel);
     return () => {
- window.removeEventListener("keydown", onKey); window.removeEventListener("keydown", onDel); };
-  }, [undo, redo]);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keydown", onDel);
+    };
+  }, [undo, redo, presentationMode, isMac]);
 
   const nodes = model.nodes as TMNode[];
   const edges = model.edges as TMEdge[];
@@ -450,7 +457,12 @@ window.addEventListener("keydown", onDel);
   };
 
   return (
-    <div className={`layout ${theme === "dark" ? "themeDark" : "themeLight"}`}>
+    <>
+      <OnboardingModal open={showOnboarding} onClose={() => { setHasOnboarded(true); setShowOnboarding(false); }} />
+      {presentationMode ? <PresentationMode onClose={() => setPresentationMode(false)} /> : null}
+      <TemplatesModal open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
+      <GlobalSearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <div className={`layout ${theme === "dark" ? "themeDark" : "themeLight"}`}>
       <div className="sidebar">
         <Palette />
       </div>
@@ -700,5 +712,6 @@ window.addEventListener("keydown", onDel);
       }} />
       </div>
     </div>
+    </>
   );
 }
