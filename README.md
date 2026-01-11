@@ -1,5 +1,9 @@
 ﻿# ThreatCanvas
 
+<p align="center">
+  <img src="public/logo.svg" alt="ThreatCanvas" width="640" />
+</p>
+
 **ThreatCanvas** is a fast, browser-native threat modeling platform with built-in frameworks, findings, evidence tracking, and reporting. **No backend required.**
 
 Designed for security teams operating in restricted or high-sensitivity environments, ThreatCanvas runs entirely in the browser and can be hosted as a static website.
