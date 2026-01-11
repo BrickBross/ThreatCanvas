@@ -1,3 +1,4 @@
+﻿
 import React, { useMemo, useState } from "react";
 import { VirtualList } from "./VirtualList";
 import { useTMStore } from "../model/store";
@@ -73,43 +74,27 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
   const linkFindingToThreat = useTMStore((s) => s.linkFindingToThreat);
   const unlinkFindingFromThreat = useTMStore((s) => s.unlinkFindingFromThreat);
 
-  const nodes = model.nodes as any[];
-  const edges = model.edges as any[];
-  const node = nodes.find((n) => n.id === selectedNodeId);
-  const edge = edges.find((e) => e.id === selectedEdgeId);
-
-  const threatsAll = model.threats || [];
-  const threatSummary = useMemo(() => {
-    const total = threatsAll.length;
-    const open = threatsAll.filter((t:any)=> (t.status==="open"||t.status==="in_analysis")).length;
-    const noEvidence = threatSummary.noEvidence;
-    const noFindings = threatSummary.noFindings;
-    const verifiedEvidence = threatsAll.filter((t:any)=> (t.commentary||[]).some((e:any)=> e.status==="verified")).length;
-    return { total, open, noEvidence, noFindings, verifiedEvidence };
-  }, [threatsAll]);
-  const threats = (threatFrameworkFilter && threatFrameworkFilter.length)
-    ? threatsAll.filter((t: any) => threatFrameworkFilter.includes((t.framework === "STRIDE" ? "STRIDE" : (t.frameworkId || t.frameworkCode || t.frameworkRef ? t.framework : t.framework)) as any) || threatFrameworkFilter.includes((t.framework as any) || ""))
-    : threatsAll;
-  const findings = model.findings || []; // virtual findings
-
-  const issues = useMemo(() => validateModel(model), [model]);
-
-  const frameworkSelections = useTMStore((s) => s.frameworkSelections) as FrameworkId[];
-  const setFrameworkSelections = useTMStore((s) => s.setFrameworkSelections) as (ids: FrameworkId[]) => void;
-  const frameworkWeights = useTMStore((s) => (s as any).frameworkWeights) as Record<string, { likelihood: number; impact: number }>;
-  const setFrameworkWeight = useTMStore((s) => (s as any).setFrameworkWeight) as (id: string, patch: { likelihood?: number; impact?: number }) => void;
-  const generateGapsOnly = useTMStore((s) => (s as any).generateGapsOnly) as boolean;
-  const setGenerateGapsOnly = useTMStore((s) => (s as any).setGenerateGapsOnly) as (v: boolean) => void;
-  const generateScope = useTMStore((s) => (s as any).generateScope) as ("selection"|"model");
-  const setGenerateScope = useTMStore((s) => (s as any).setGenerateScope) as (v: "selection"|"model") => void;
   const threatFrameworkFilter = useTMStore((s) => (s as any).threatFrameworkFilter) as string[];
   const setThreatFrameworkFilter = useTMStore((s) => (s as any).setThreatFrameworkFilter) as (ids: string[]) => void;
   const threatStatusFilter = useTMStore((s) => (s as any).threatStatusFilter) as string[];
   const setThreatStatusFilter = useTMStore((s) => (s as any).setThreatStatusFilter) as (ids: string[]) => void;
-  const threatEvidenceFilter = useTMStore((s) => (s as any).threatEvidenceFilter) as ("any"|"no_evidence"|"has_verified");
+  const threatEvidenceFilter = useTMStore((s) => (s as any).threatEvidenceFilter) as "any" | "no_evidence" | "has_verified";
+  const setThreatEvidenceFilter = useTMStore((s) => (s as any).setThreatEvidenceFilter) as (v: any) => void;
   const threatRiskCell = useTMStore((s) => (s as any).threatRiskCell) as ({ likelihood: number; impact: number } | null);
   const setThreatRiskCell = useTMStore((s) => (s as any).setThreatRiskCell) as (v: { likelihood: number; impact: number } | null) => void;
-  const setThreatEvidenceFilter = useTMStore((s) => (s as any).setThreatEvidenceFilter) as (v: any) => void;
+
+  const frameworkSelections = useTMStore((s) => s.frameworkSelections) as FrameworkId[];
+  const setFrameworkSelections = useTMStore((s) => s.setFrameworkSelections) as (ids: FrameworkId[]) => void;
+  const frameworkWeights = useTMStore((s) => (s as any).frameworkWeights) as Record<string, { likelihood: number; impact: number }>;
+  const setFrameworkWeight = useTMStore((s) => (s as any).setFrameworkWeight) as (
+    id: string,
+    patch: { likelihood?: number; impact?: number }
+  ) => void;
+  const generateGapsOnly = useTMStore((s) => (s as any).generateGapsOnly) as boolean;
+  const setGenerateGapsOnly = useTMStore((s) => (s as any).setGenerateGapsOnly) as (v: boolean) => void;
+  const generateScope = useTMStore((s) => (s as any).generateScope) as "selection" | "model";
+  const setGenerateScope = useTMStore((s) => (s as any).setGenerateScope) as (v: "selection" | "model") => void;
+
   const savedThreatFilters = useTMStore((s) => (s as any).savedThreatFilters) as any[];
   const savedViews = useTMStore((s) => (s as any).savedViews) as any[];
   const saveView = useTMStore((s) => (s as any).saveView) as (name: string) => void;
@@ -119,10 +104,14 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
   const applyThreatFilter = useTMStore((s) => (s as any).applyThreatFilter) as (id: string) => void;
   const deleteThreatFilter = useTMStore((s) => (s as any).deleteThreatFilter) as (id: string) => void;
 
-  const groupBy = useTMStore((s) => (s as any).uiThreatGroupBy) as ("none"|"framework"|"status"|"owner");
+  const groupBy = useTMStore((s) => (s as any).uiThreatGroupBy) as "none" | "framework" | "status" | "owner";
   const setGroupBy = useTMStore((s) => (s as any).setUiThreatGroupBy) as (v: any) => void;
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
 
+  const nodes = model.nodes as any[];
+  const edges = model.edges as any[];
+  const node = nodes.find((n) => n.id === selectedNodeId);
+  const edge = edges.find((e) => e.id === selectedEdgeId);
 
   const tab = useTMStore((s) => s.uiTab);
   const setTab = useTMStore((s) => s.setUiTab);
@@ -139,8 +128,8 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
       affectedNodeIds: nid ? [nid] : [],
       affectedEdgeIds: eid ? [eid] : [],
       owner: "",
-      likelihood: "medium",
-      impact: "medium",
+      likelihood: 3 as any,
+      impact: 3 as any,
       mitigation: "",
       commentary: [],
       findingIds: []
@@ -151,11 +140,7 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
     const st = useTMStore.getState();
     const nid = st.selectedNodeId;
     const eid = st.selectedEdgeId;
-    const title = nid
-      ? "Finding for selected node"
-      : eid
-      ? "Finding for selected flow"
-      : "New finding";
+    const title = nid ? "Finding for selected node" : eid ? "Finding for selected flow" : "New finding";
 
     addFinding({
       title,
@@ -167,22 +152,46 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
     });
   };
 
+  const threatsAll = model.threats || [];
+  const threatSummary = useMemo(() => {
+    const total = threatsAll.length;
+    const open = threatsAll.filter((t: any) => t.status === "open" || t.status === "in_analysis").length;
+    const noEvidence = threatsAll.filter((t: any) => !(t.commentary || []).length).length;
+    const noFindings = threatsAll.filter((t: any) => !(t.findingIds || []).length).length;
+    const verifiedEvidence = threatsAll.filter((t: any) => (t.commentary || []).some((e: any) => e.status === "verified")).length;
+    return { total, open, noEvidence, noFindings, verifiedEvidence };
+  }, [threatsAll]);
+
+  const filteredThreats = useMemo(() => {
+    return (threatsAll as any[]).filter((t) => {
+      const fwId = getFrameworkId(t);
+      if (threatFrameworkFilter.length && !threatFrameworkFilter.includes(fwId)) return false;
+      if (threatStatusFilter.length && !threatStatusFilter.includes(t.status || "open")) return false;
+      if (threatEvidenceFilter === "no_evidence" && (t.commentary || []).length) return false;
+      if (threatEvidenceFilter === "has_verified" && !(t.commentary || []).some((e: any) => e.status === "verified")) return false;
+      if (threatRiskCell && !(Number(t.likelihood) === threatRiskCell.likelihood && Number(t.impact) === threatRiskCell.impact)) return false;
+      return true;
+    });
+  }, [threatsAll, threatFrameworkFilter, threatStatusFilter, threatEvidenceFilter, threatRiskCell]);
+
   const groupedThreats = useMemo(() => {
     const groups: Record<string, any[]> = {};
-    const keyFor = (t:any) => {
+    const keyFor = (t: any) => {
       if (groupBy === "none") return "All";
       if (groupBy === "framework") return getFrameworkId(t);
       if (groupBy === "status") return t.status || "open";
-      if (groupBy === "owner") return (t.owner || "(unassigned)");
+      if (groupBy === "owner") return t.owner || "(unassigned)";
       return "All";
     };
-    for (const t of threats as any[]) {
+    for (const t of filteredThreats) {
       const k = keyFor(t);
       (groups[k] ||= []).push(t);
     }
     return groups;
-  }, [threats, groupBy]);
+  }, [filteredThreats, groupBy]);
 
+  const findings = model.findings || [];
+  const issues = useMemo(() => validateModel(model), [model]);
   return (
     <div className="col">
       <div className="tabs">
@@ -190,7 +199,7 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
           Properties
         </button>
         <button className={tab === "threats" ? "tab tabActive" : "tab"} onClick={() => setTab("threats")}>
-          Threats ({threats.length})
+          Threats ({filteredThreats.length})
         </button>
         <button className={tab === "findings" ? "tab tabActive" : "tab"} onClick={() => setTab("findings")}>
           Findings ({findings.length})
@@ -240,9 +249,7 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
 
           <div className="card">
             <div className="cardTitle">Selection</div>
-            <div className="small muted">
-              Select a node or a flow in the diagram to edit properties here.
-            </div>
+            <div className="small muted">Select a node or a flow in the diagram to edit properties here.</div>
 
             {node ? (
               <div className="col" style={{ gap: 10, marginTop: 10 }}>
@@ -405,9 +412,7 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                     <select
                       className="select"
                       value={String(!!edge.data?.props?.authOnFlow)}
-                      onChange={(e) =>
-                        updateEdgeData(edge.id, { props: { ...(edge.data.props || {}), authOnFlow: e.target.value === "true" } })
-                      }
+                      onChange={(e) => updateEdgeData(edge.id, { props: { ...(edge.data.props || {}), authOnFlow: e.target.value === "true" } })}
                     >
                       <option value="false">No</option>
                       <option value="true">Yes</option>
@@ -423,7 +428,6 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
           </div>
         </>
       )}
-
       {tab === "threats" && (
         <>
           <div className="card">
@@ -434,220 +438,206 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               </button>
             </div>
             <div className="small muted">Track threats, link findings, and record evidence.</div>
-<div className="hr" />
-<div className="cardTitle">Summary</div>
-<div className="kv">
-  <div>
-    <label className="small muted">Threats</label>
-    <div><b>{threatSummary.total}</b> total • <b>{threats.length}</b> shown</div>
-                <div className="small muted">Threats w/ no evidence: <b>{threatSummary.noEvidence}</b></div>
-                <div className="small muted">Threats w/ no findings: <b>{threatSummary.noFindings}</b></div>
-  </div>
-  <div>
-    <label className="small muted">Evidence coverage</label>
-    <div>
-      <b>{(threatSummary.verifiedEvidence)}</b> threats w/ verified evidence
-    </div>
-  </div>
-</div>
-<div className="small muted" style={{marginTop:8}}>
-  By framework: {FRAMEWORKS.map((fw)=> `${fw.name}=${threatsAll.filter((t:any)=> getFrameworkId(t)===fw.id).length}`).join(" • ")}
-</div>
-
-<div className="hr" />
-<div className="small muted"><b>Threat libraries</b> (tick what you want, then generate)</div>
-<div className="list" style={{ marginTop: 8 }}>
-  {FRAMEWORKS.map((fw) => (
-    <label key={fw.id} className="item" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <input
-        type="checkbox"
-        checked={frameworkSelections.includes(fw.id)}
-        onChange={() => {
-          const on = frameworkSelections.includes(fw.id);
-          const next = on ? frameworkSelections.filter((x) => x !== fw.id) : [...frameworkSelections, fw.id];
-          setFrameworkSelections(next as any);
-        }}
-      />
-      <div className="col" style={{ gap: 2 }}>
-        <b>{fw.name}</b>
-        <div className="small muted">{fw.description}</div>
-                    <div className="row" style={{gap:10, marginTop:6, flexWrap:"wrap"}}>
-                      <label className="small muted">L
-                        <input className="input" style={{width:60, marginLeft:6}} type="number" min={1} max={5}
-                          value={(frameworkWeights[fw.id]?.likelihood ?? DEFAULT_WEIGHTS[fw.id].likelihood)}
-                          onChange={(e) => setFrameworkWeight(fw.id, { likelihood: Math.max(1, Math.min(5, Number(e.target.value))) })} />
-                      </label>
-                      <label className="small muted">I
-                        <input className="input" style={{width:60, marginLeft:6}} type="number" min={1} max={5}
-                          value={(frameworkWeights[fw.id]?.impact ?? DEFAULT_WEIGHTS[fw.id].impact)}
-                          onChange={(e) => setFrameworkWeight(fw.id, { impact: Math.max(1, Math.min(5, Number(e.target.value))) })} />
-                      </label>
-                    </div>
-      </div>
-    </label>
-  ))}
-</div>
-<div className="row" style={{ gap: 8, marginTop: 10, flexWrap:"wrap" }}>
-              <label className="row" style={{gap:8, alignItems:"center"}}>
-                <input type="checkbox" checked={generateGapsOnly} onChange={(e) => setGenerateGapsOnly(e.target.checked)} />
-                <span className="small muted">Generate only gaps (avoid duplicates)</span>
-              </label>
-              <div className="row" style={{gap:10, alignItems:"center"}}>
-                <span className="small muted">Scope:</span>
-                <label className="row" style={{gap:6, alignItems:"center"}}>
-                  <input type="radio" name="genScope" checked={generateScope === "selection"} onChange={() => setGenerateScope("selection")} />
-                  <span className="small muted">Selection</span>
-                </label>
-                <label className="row" style={{gap:6, alignItems:"center"}}>
-                  <input type="radio" name="genScope" checked={generateScope === "model"} onChange={() => setGenerateScope("model")} />
-                  <span className="small muted">Whole model</span>
-                </label>
+            <div className="row" style={{ gap: 12, flexWrap: "wrap", marginTop: 8 }}>
+              <div className="small">Total: {threatSummary.total}</div>
+              <div className="small">Open/In analysis: {threatSummary.open}</div>
+              <div className="small">No evidence: {threatSummary.noEvidence}</div>
+              <div className="small">No findings: {threatSummary.noFindings}</div>
+              <div className="small">Has verified evidence: {threatSummary.verifiedEvidence}</div>
+            </div>
+            <div className="hr" />
+            <div className="small muted"><b>Generate threats from libraries</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <select
+                className="select"
+                multiple
+                size={Math.min(6, FRAMEWORKS.length)}
+                value={frameworkSelections as any}
+                onChange={(e) => {
+                  const opts = Array.from(e.target.selectedOptions).map((o) => o.value as FrameworkId);
+                  setFrameworkSelections(opts);
+                }}
+              >
+                {FRAMEWORKS.map((fw) => (
+                  <option key={fw.id} value={fw.id}>
+                    {fw.name}
+                  </option>
+                ))}
+              </select>
+              <div className="col" style={{ gap: 6 }}>
+                <label className="small muted">Weights (likelihood/impact)</label>
+                {FRAMEWORKS.map((fw) => (
+                  <div key={"wt-" + fw.id} className="row" style={{ gap: 6, alignItems: "center" }}>
+                    <span className="tiny muted" style={{ width: 60 }}>{fw.id}</span>
+                    <label className="small muted">
+                      L
+                      <input
+                        className="input"
+                        style={{ width: 60, marginLeft: 6 }}
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={frameworkWeights[fw.id]?.likelihood ?? DEFAULT_WEIGHTS[fw.id].likelihood}
+                        onChange={(e) => setFrameworkWeight(fw.id, { likelihood: Math.max(1, Math.min(5, Number(e.target.value))) })}
+                      />
+                    </label>
+                    <label className="small muted">
+                      I
+                      <input
+                        className="input"
+                        style={{ width: 60, marginLeft: 6 }}
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={frameworkWeights[fw.id]?.impact ?? DEFAULT_WEIGHTS[fw.id].impact}
+                        onChange={(e) => setFrameworkWeight(fw.id, { impact: Math.max(1, Math.min(5, Number(e.target.value))) })}
+                      />
+                    </label>
+                  </div>
+                ))}
               </div>
-  <button
-    className="btnPrimary"
-    onClick={() => {
-      const st = useTMStore.getState();
-      const selection = generateScope === "selection" ? { nodeId: st.selectedNodeId, edgeId: st.selectedEdgeId } : { nodeId: null, edgeId: null };
-      const generated = generateFromFrameworks(st.model as any, frameworkSelections as any, selection, { weights: { ...DEFAULT_WEIGHTS, ...(frameworkWeights || {}) } as any, gapsOnly: generateGapsOnly });
-      st.commitHistory();
-      for (const t of generated) st.addThreat(t as any);
-      setTab("threats");
-    }}
-    disabled={!frameworkSelections.length}
-  >
-    Generate from selected libraries
-  </button>
-  <button className="btn" onClick={() => setFrameworkSelections(["STRIDE"] as any)}>Reset</button>
-</div>
-
+              <div className="col" style={{ gap: 6 }}>
+                <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <input type="checkbox" checked={generateGapsOnly} onChange={(e) => setGenerateGapsOnly(e.target.checked)} />
+                  <span className="small muted">Generate gaps only</span>
+                </label>
+                <div className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <label className="small muted">Scope:</label>
+                  <label className="row" style={{ gap: 4, alignItems: "center" }}>
+                    <input type="radio" name="genScope" checked={generateScope === "selection"} onChange={() => setGenerateScope("selection")} />
+                    <span className="small muted">Selection</span>
+                  </label>
+                  <label className="row" style={{ gap: 4, alignItems: "center" }}>
+                    <input type="radio" name="genScope" checked={generateScope === "model"} onChange={() => setGenerateScope("model")} />
+                    <span className="small muted">Whole model</span>
+                  </label>
+                </div>
+                <div className="row" style={{ gap: 8 }}>
+                  <button
+                    className="btnPrimary"
+                    onClick={() => {
+                      const st = useTMStore.getState();
+                      const selection = generateScope === "selection" ? { nodeId: st.selectedNodeId, edgeId: st.selectedEdgeId } : { nodeId: null, edgeId: null };
+                      const generated = generateFromFrameworks(st.model as any, frameworkSelections as any, selection, { weights: { ...DEFAULT_WEIGHTS, ...(frameworkWeights || {}) } as any, gapsOnly: generateGapsOnly });
+                      st.commitHistory();
+                      for (const t of generated) st.addThreat(t as any);
+                      setTab("threats");
+                    }}
+                    disabled={!frameworkSelections.length}
+                  >
+                    Generate from selected libraries
+                  </button>
+                  <button className="btn" onClick={() => setFrameworkSelections(["STRIDE"] as any)}>Reset</button>
+                </div>
+              </div>
+            </div>
           </div>
-<div className="hr" />
-<div className="small muted"><b>Filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
-  <span className="small muted">Saved views:</span>
-            <select className="select" style={{ maxWidth: 260 }} value="" onChange={(e) => { const v = e.target.value; if (!v) return; applyView(v); }}>
-              <option value="">Apply…</option>
-              {(savedViews || []).map((v: any) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
+          </div>
+
+          <div className="card">
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <span className="small muted">Saved views:</span>
+              <select className="select" style={{ maxWidth: 240 }} value="" onChange={(e) => { const v = e.target.value; if (v) applyView(v); }}>
+                <option value="">Apply…</option>
+                {(savedViews || []).map((v: any) => (
+                  <option key={v.id} value={v.id}>{v.name}</option>
+                ))}
+              </select>
+              <button className="btn" onClick={() => { const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim(); if (name) saveView(name); }}>
+                Save view
+              </button>
+              <button className="btn" onClick={() => { const name = (prompt("Delete view by name (exact):") || "").trim(); const v = (savedViews || []).find((x: any) => x.name === name); if (v) deleteView(v.id); }}>
+                Delete view
+              </button>
+
+              <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
+              <select className="select" style={{ maxWidth: 240 }} value="" onChange={(e) => { const v = e.target.value; if (v) applyThreatFilter(v); }}>
+                <option value="">Apply…</option>
+                {(savedThreatFilters || []).map((f: any) => (
+                  <option key={f.id} value={f.id}>{f.name}</option>
+                ))}
+              </select>
+              <button className="btn" onClick={() => { const name = prompt("Name this saved filter:") || ""; if (name.trim()) saveThreatFilter(name.trim()); }}>
+                Save current
+              </button>
+              <button className="btn" onClick={() => { const name = prompt("Delete saved filter by name (exact):") || ""; const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim()); if (f) deleteThreatFilter(f.id); }}>
+                Delete filter
+              </button>
+            </div>
+
+            <div className="hr" />
+            <div className="small muted"><b>Status filter</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+              {THREAT_STATUSES.map((s) => (
+                <label key={s} className="row" style={{ gap: 6, alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={(threatStatusFilter || []).includes(s)}
+                    onChange={() => {
+                      const on = (threatStatusFilter || []).includes(s);
+                      const next = on ? (threatStatusFilter || []).filter((x) => x !== s) : [...(threatStatusFilter || []), s];
+                      setThreatStatusFilter(next);
+                    }}
+                  />
+                  <span className="small muted">{s}</span>
+                </label>
               ))}
-            </select>
-            <button className="btn" onClick={() => { const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim(); if (name) saveView(name); }}>
-              Save view
-            </button>
-            <button className="btn" onClick={() => { const name = (prompt("Delete view by name (exact):") || "").trim(); const v = (savedViews || []).find((x:any)=> x.name === name); if (v) deleteView(v.id); }}>
-              Delete…
-            </button>
+              <button className="btn" onClick={() => setThreatStatusFilter([])}>Clear status</button>
+            </div>
 
-            <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
+            <div className="hr" />
+            <div className="small muted"><b>Evidence filter</b></div>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "any"} onChange={() => setThreatEvidenceFilter("any")} />
+                <span className="small muted">Any</span>
+              </label>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "no_evidence"} onChange={() => setThreatEvidenceFilter("no_evidence")} />
+                <span className="small muted">No evidence</span>
+              </label>
+              <label className="row" style={{ gap: 6, alignItems: "center" }}>
+                <input type="radio" name="evf" checked={threatEvidenceFilter === "has_verified"} onChange={() => setThreatEvidenceFilter("has_verified")} />
+                <span className="small muted">Has verified evidence</span>
+              </label>
+            </div>
 
-  <select
-    className="select"
-    style={{ maxWidth: 260 }}
-    value=""
-    onChange={(e) => {
-      const v = e.target.value;
-      if (!v) return;
-      applyThreatFilter(v);
-    }}
-  >
-    <option value="">Apply…</option>
-    {(savedThreatFilters || []).map((f: any) => (
-      <option key={f.id} value={f.id}>
-        {f.name}
-      </option>
-    ))}
-  </select>
-  <button
-    className="btn"
-    onClick={() => {
-      const name = prompt("Name this saved filter:") || "";
-      if (name.trim()) saveThreatFilter(name.trim());
-    }}
-  >
-    Save current
-  </button>
-  <button
-    className="btn"
-    onClick={() => {
-      const name = prompt("Delete saved filter by name (exact):") || "";
-      const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim());
-      if (f) deleteThreatFilter(f.id);
-    }}
-  >
-    Delete…
-  </button>
-</div>
+            <div className="hr" />
+            <div className="small muted"><b>Framework filter</b></div>
+            <div className="list" style={{ marginTop: 8 }}>
+              {FRAMEWORKS.map((fw) => (
+                <label key={fw.id} className="item" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <input
+                    type="checkbox"
+                    checked={threatFrameworkFilter.includes(fw.id)}
+                    onChange={() => {
+                      const on = threatFrameworkFilter.includes(fw.id);
+                      const next = on ? threatFrameworkFilter.filter((x) => x !== fw.id) : [...threatFrameworkFilter, fw.id];
+                      setThreatFrameworkFilter(next);
+                    }}
+                  />
+                  <div className="small muted">{fw.name}</div>
+                </label>
+              ))}
+              <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear filter</button>
+              <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear risk</button>
+            </div>
 
-<div className="hr" />
-<div className="small muted"><b>Status filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-  {THREAT_STATUSES.map((s) => (
-    <label key={"st-"+s} className="row" style={{ gap: 6, alignItems: "center" }}>
-      <input
-        type="checkbox"
-        checked={(threatStatusFilter || []).includes(s)}
-        onChange={() => {
-          const on = (threatStatusFilter || []).includes(s);
-          const next = on ? (threatStatusFilter || []).filter((x) => x !== s) : [...(threatStatusFilter || []), s];
-          setThreatStatusFilter(next);
-        }}
-      />
-      <span className="small muted">{s}</span>
-    </label>
-  ))}
-  <button className="btn" onClick={() => setThreatStatusFilter([])}>Clear status</button>
-</div>
-
-<div className="hr" />
-<div className="small muted"><b>Evidence filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "any"} onChange={() => setThreatEvidenceFilter("any")} />
-    <span className="small muted">Any</span>
-  </label>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "no_evidence"} onChange={() => setThreatEvidenceFilter("no_evidence")} />
-    <span className="small muted">No evidence</span>
-  </label>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "has_verified"} onChange={() => setThreatEvidenceFilter("has_verified")} />
-    <span className="small muted">Has verified evidence</span>
-  </label>
-</div>
-
-
-<div className="list" style={{ marginTop: 8 }}>
-  {FRAMEWORKS.map((fw) => (
-    <label key={"flt-"+fw.id} className="item" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <input
-        type="checkbox"
-        checked={threatFrameworkFilter.includes(fw.id)}
-        onChange={() => {
-          const on = threatFrameworkFilter.includes(fw.id);
-          const next = on ? threatFrameworkFilter.filter((x) => x !== fw.id) : [...threatFrameworkFilter, fw.id];
-          setThreatFrameworkFilter(next);
-        }}
-      />
-      <div className="small muted">{fw.name}</div>
-    </label>
-  ))}
-  <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear filter</button>
-            <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear risk</button>
             <div className="hr" />
             <div className="small muted"><b>Bulk actions</b></div>
-            <div className="row" style={{gap:8, flexWrap:"wrap", marginTop:8}}>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               <button className="btn" onClick={() => {
                 const v = prompt("Set status for filtered threats (open, in_analysis, mitigated, accepted, verified, rejected):") || "";
                 if (!v.trim()) return;
                 const st = useTMStore.getState();
                 st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { status: v.trim() as any });
+                for (const t of filteredThreats) st.updateThreat(t.id, { status: v.trim() as any });
               }}>Set status</button>
               <button className="btn" onClick={() => {
                 const v = prompt("Set owner for filtered threats:") || "";
                 const st = useTMStore.getState();
                 st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { owner: v });
+                for (const t of filteredThreats) st.updateThreat(t.id, { owner: v });
               }}>Set owner</button>
               <button className="btn" onClick={() => {
                 const l = Number(prompt("Set likelihood (1-5):") || "");
@@ -655,18 +645,19 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
                 if (!l && !i) return;
                 const st = useTMStore.getState();
                 st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { ...(l?{likelihood:l}:{}), ...(i?{impact:i}:{}) } as any);
+                for (const t of filteredThreats) st.updateThreat(t.id, { ...(l ? { likelihood: l } : {}), ...(i ? { impact: i } : {}) } as any);
               }}>Set L/I</button>
               <button className="btn" onClick={() => {
-                if (!confirm(`Delete ${threats.length} filtered threats?`)) return;
+                if (!confirm(`Delete ${filteredThreats.length} filtered threats?`)) return;
                 const st = useTMStore.getState();
                 st.commitHistory();
-                for (const t of (threats as any[])) st.deleteThreat(t.id);
+                for (const t of filteredThreats) st.deleteThreat(t.id);
               }}>Delete</button>
             </div>
+
             <div className="hr" />
             <div className="small muted"><b>Group by</b></div>
-            <div className="row" style={{gap:8, flexWrap:"wrap", marginTop:8}}>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
               <select className="select" value={groupBy} onChange={(e) => setGroupBy(e.target.value as any)}>
                 <option value="none">none</option>
                 <option value="framework">framework</option>
@@ -675,274 +666,107 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               </select>
               <button className="btn" onClick={() => setCollapsedGroups({})}>Expand all</button>
             </div>
+          </div>
 
-          <div className="list">
+          <div className="list" style={{ marginTop: 10 }}>
             {Object.entries(groupedThreats).map(([gk, items]) => {
-  const title =
-    groupBy === "framework"
-      ? (FRAMEWORKS.find((f) => f.id === gk)?.name || gk)
-      : gk;
-  const isCollapsed = !!collapsedGroups[gk];
-  return (
-    <div key={gk} className="card" style={{ marginBottom: 10 }}>
-      <div className="row" style={{ justifyContent: "space-between" }}>
-        <div className="row" style={{ gap: 8, alignItems: "center" }}>
-          <button
-            className="btn"
-            onClick={() => setCollapsedGroups((s) => ({ ...s, [gk]: !s[gk] }))}
-            title={isCollapsed ? "Expand" : "Collapse"}
-          >
-            {isCollapsed ? "+" : "–"}
-          </button>
-          <b>{title}</b>
-          <span className="badge">{items.length}</span>
-        </div>
-      </div>
-      {!isCollapsed ? (
-        <div className="list" style={{ marginTop: 10 }}>
-          {/* virtualized */}
+              const title = groupBy === "framework" ? (FRAMEWORKS.find((f) => f.id === gk)?.name || gk) : gk;
+              const isCollapsed = !!collapsedGroups[gk];
+              return (
+                <div key={gk} className="card" style={{ marginBottom: 10 }}>
+                  <div className="row" style={{ justifyContent: "space-between" }}>
+                    <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                      <button className="btn" onClick={() => setCollapsedGroups((s) => ({ ...s, [gk]: !s[gk] }))} title={isCollapsed ? "Expand" : "Collapse"}>
+                        {isCollapsed ? "+" : ">"}
+                      </button>
+                      <b>{title}</b>
+                      <span className="badge">{items.length}</span>
+                    </div>
+                  </div>
+                  {!isCollapsed ? (
+                    <div className="list" style={{ marginTop: 10 }}>
                       <VirtualList
-                        items={items.slice(0, renderLimitThreats)}
+                        items={items.slice(0, 200)}
                         rowHeight={360}
                         height={Math.min(900, 360 * Math.min(items.length, 2.5))}
                         getKey={(it: any) => it.id}
                         renderRow={(t: any) => (
-            <div key={t.id} className="card">
-              <div className="row" style={{ justifyContent: "space-between" }}>
-                <div className="row">
-                  <Pill text={t.status} />
-                  <span className="badge">{t.stride}</span>
-                  {t.framework ? <span className="badge">{t.frameworkRef ? `${t.frameworkRef}` : t.framework}</span> : null}
-                  <b>{t.title}</b>
-                </div>
-                <button className="btn" onClick={() => deleteThreat(t.id)}>
-                  Delete
-                </button>
-              </div>
+                          <div key={t.id} className="card">
+                            <div className="row" style={{ justifyContent: "space-between" }}>
+                              <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                                <Pill text={t.status} />
+                                <span className="badge">{t.stride}</span>
+                                {t.framework ? <span className="badge">{t.frameworkRef ? `${t.frameworkRef}` : t.framework}</span> : null}
+                                <b>{t.title}</b>
+                              </div>
+                              <button className="btn" onClick={() => deleteThreat(t.id)}>Delete</button>
+                            </div>
 
-              <div className="kv">
-                <div>
-                  <label className="small muted">Status</label>
-                  <select
-                    className="select"
-                    value={t.status}
-                    onChange={(e) => updateThreat(t.id, { status: e.target.value as ThreatStatus })}
-                  >
-                    {THREAT_STATUSES.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="small muted">Owner</label>
-                  <input
-                    className="input"
-                    value={t.owner || ""}
-                    onChange={(e) => updateThreat(t.id, { owner: e.target.value })}
-                  />
-                </div>
-              </div>
+                            <div className="kv">
+                              <div>
+                                <label className="small muted">Status</label>
+                                <select className="select" value={t.status} onChange={(e) => updateThreat(t.id, { status: e.target.value as ThreatStatus })}>
+                                  {THREAT_STATUSES.map((s) => (
+                                    <option key={s} value={s}>{s}</option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="small muted">Owner</label>
+                                <input className="input" value={t.owner || ""} onChange={(e) => updateThreat(t.id, { owner: e.target.value })} />
+                              </div>
+                            </div>
 
-              <div>
-                <label className="small muted">Title</label>
-                <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
-              </div>
-              <div>
-                <label className="small muted">Description</label>
-                <textarea
-                  className="input"
-                  rows={3}
-                  value={t.description || ""}
-                  onChange={(e) => updateThreat(t.id, { description: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="small muted">Mitigation</label>
-                <textarea
-                  className="input"
-                  rows={2}
-                  value={t.mitigation || ""}
-                  onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })}
-                />
-              </div>
+                            <div>
+                              <label className="small muted">Title</label>
+                              <input className="input" value={t.title} onChange={(e) => updateThreat(t.id, { title: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="small muted">Description</label>
+                              <textarea className="input" rows={3} value={t.description || ""} onChange={(e) => updateThreat(t.id, { description: e.target.value })} />
+                            </div>
+                            <div>
+                              <label className="small muted">Mitigation</label>
+                              <textarea className="input" rows={2} value={t.mitigation || ""} onChange={(e) => updateThreat(t.id, { mitigation: e.target.value })} />
+                            </div>
 
-              <div className="hr" />
+                            <div className="hr" />
+                            <div className="row" style={{ justifyContent: "space-between" }}>
+                              <b>Evidence</b>
+                              <button className="btn" onClick={() => addEvidenceToThreat(t.id, { author: "", note: prompt("Evidence note:") || "", links: [], status: "draft" as any } as any)}>Add note</button>
+                            </div>
 
-              <div className="row" style={{ justifyContent: "space-between" }}>
-                <div className="hr" />
-<div className="row" style={{ justifyContent: "space-between" }}>
-  <b>Compensating controls</b>
-  <button
-    className="btn"
-    onClick={() => {
-      const cat = CONTROL_CATEGORIES[0];
-      const vendor = cat.vendors[0];
-      addFindingControl(f.id, {
-        id: crypto.randomUUID(),
-        category: cat.id,
-        vendor: vendor.name,
-        providedControl: vendor.notes,
-        coverage: "partial",
-        notes: ""
-      });
-    }}
-  >
-    Add control
-  </button>
-</div>
-
-{(f.compensatingControls || []).length ? (
-  <div className="list" style={{ marginTop: 8 }}>
-    {(f.compensatingControls || []).map((c: any) => {
-      const cat = CONTROL_CATEGORIES.find((x) => x.id === c.category) || CONTROL_CATEGORIES[0];
-      const vendors = cat.vendors || [];
-      return (
-        <div key={c.id} className="card">
-          <div className="row" style={{ justifyContent: "space-between" }}>
-            <div className="row" style={{ gap: 8, alignItems: "center" }}>
-              <span className="badge">{cat.id}</span>
-              <b>{c.vendor}</b>
-            </div>
-            <button className="btn" onClick={() => removeFindingControl(f.id, c.id)}>Remove</button>
-          </div>
-
-          <div className="kv">
-            <div>
-              <label className="small muted">Category</label>
-              <select
-                className="select"
-                value={c.category}
-                onChange={(e) => {
-                  const nextCat = e.target.value;
-                  const cat2 = CONTROL_CATEGORIES.find((x) => x.id === nextCat) || CONTROL_CATEGORIES[0];
-                  const v0 = cat2.vendors[0];
-                  updateFindingControl(f.id, c.id, {
-                    category: cat2.id,
-                    vendor: v0 ? v0.name : "",
-                    providedControl: v0 ? v0.notes : ""
-                  });
-                }}
-              >
-                {CONTROL_CATEGORIES.map((cc) => (
-                  <option key={cc.id} value={cc.id}>{cc.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="small muted">Vendor</label>
-              <select
-                className="select"
-                value={c.vendor}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  const vend = vendors.find((vv) => vv.name === v);
-                  updateFindingControl(f.id, c.id, { vendor: v, providedControl: vend ? vend.notes : c.providedControl });
-                }}
-              >
-                {vendors.map((vv) => (
-                  <option key={vv.name} value={vv.name}>{vv.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="small muted">Coverage</label>
-              <select
-                className="select"
-                value={c.coverage || "partial"}
-                onChange={(e) => updateFindingControl(f.id, c.id, { coverage: e.target.value })}
-              >
-                <option value="partial">partial</option>
-                <option value="complete">complete</option>
-                <option value="unknown">unknown</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="small muted">What it provides</label>
-            <textarea
-              className="input"
-              rows={2}
-              value={c.providedControl || ""}
-              onChange={(e) => updateFindingControl(f.id, c.id, { providedControl: e.target.value })}
-            />
-          </div>
-          <div>
-            <label className="small muted">Commentary</label>
-            <textarea
-              className="input"
-              rows={2}
-              value={c.notes || ""}
-              onChange={(e) => updateFindingControl(f.id, c.id, { notes: e.target.value })}
-            />
-          </div>
-        </div>
-      );
-    })}
-  </div>
-) : (
-  <div className="small muted">No compensating controls recorded yet.</div>
-)}
-
-<b>Evidence</b>
-                <button
-                  className="btn"
-                  onClick={() =>
-                    addEvidenceToThreat(t.id, {
-                      author: "",
-                      note: prompt("Evidence note:") || "",
-                      links: [],
-                      status: "draft" as any
-                    } as any)
-                  }
-                >
-                  Add note
-                </button>
-              </div>
-
-              {(t.commentary || []).length ? (
-                <div className="list">
-                  {(t.commentary || []).map((ev: any) => (
-                    <div key={ev.id} className="item">
-                      <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                        <div className="small muted">
-                          {ev.createdAt} {ev.author ? "• " + ev.author : ""}
-                        </div>
-                        <select
-                          className="select"
-                          style={{ maxWidth: 160 }}
-                          value={(ev.status || "draft") as any}
-                          onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as any })}
-                        >
-                          {EVIDENCE_STATUSES.map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>{ev.note}</div>
-                      {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" • ")}</div> : null}
+                            {(t.commentary || []).length ? (
+                              <div className="list">
+                                {(t.commentary || []).map((ev: any) => (
+                                  <div key={ev.id} className="item">
+                                    <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                                      <div className="small muted">{ev.createdAt} {ev.author ? "- " + ev.author : ""}</div>
+                                      <select className="select" style={{ maxWidth: 160 }} value={(ev.status || "draft") as any} onChange={(e) => updateThreatEvidence(t.id, ev.id, { status: e.target.value as any })}>
+                                        {EVIDENCE_STATUSES.map((s) => (
+                                          <option key={s} value={s}>{s}</option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                    <div>{ev.note}</div>
+                                    {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" | ")}</div> : null}
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="small muted">No evidence yet.</div>
+                            )}
+                          </div>
+                        )}
+                      />
                     </div>
-                  ))}
+                  ) : null}
                 </div>
-              ) : (
-                <div className="small muted">No evidence yet.</div>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-  })}
+              );
+            })}
+          </div>
         </>
       )}
-
       {tab === "findings" && (
         <>
           <div className="card">
@@ -954,441 +778,67 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
             </div>
             <div className="small muted">Track issues to fix or formally accept, and attach evidence.</div>
           </div>
-<div className="hr" />
-<div className="small muted"><b>Filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
-  <span className="small muted">Saved views:</span>
-            <select className="select" style={{ maxWidth: 260 }} value="" onChange={(e) => { const v = e.target.value; if (!v) return; applyView(v); }}>
-              <option value="">Apply…</option>
-              {(savedViews || []).map((v: any) => (
-                <option key={v.id} value={v.id}>{v.name}</option>
-              ))}
-            </select>
-            <button className="btn" onClick={() => { const name = (prompt("Name this view (captures current Threat filters + grouping + risk cell):") || "").trim(); if (name) saveView(name); }}>
-              Save view
-            </button>
-            <button className="btn" onClick={() => { const name = (prompt("Delete view by name (exact):") || "").trim(); const v = (savedViews || []).find((x:any)=> x.name === name); if (v) deleteView(v.id); }}>
-              Delete…
-            </button>
 
-            <span className="small muted" style={{ marginLeft: 10 }}>Saved filters:</span>
-
-  <select
-    className="select"
-    style={{ maxWidth: 260 }}
-    value=""
-    onChange={(e) => {
-      const v = e.target.value;
-      if (!v) return;
-      applyThreatFilter(v);
-    }}
-  >
-    <option value="">Apply…</option>
-    {(savedThreatFilters || []).map((f: any) => (
-      <option key={f.id} value={f.id}>
-        {f.name}
-      </option>
-    ))}
-  </select>
-  <button
-    className="btn"
-    onClick={() => {
-      const name = prompt("Name this saved filter:") || "";
-      if (name.trim()) saveThreatFilter(name.trim());
-    }}
-  >
-    Save current
-  </button>
-  <button
-    className="btn"
-    onClick={() => {
-      const name = prompt("Delete saved filter by name (exact):") || "";
-      const f = (savedThreatFilters || []).find((x: any) => x.name === name.trim());
-      if (f) deleteThreatFilter(f.id);
-    }}
-  >
-    Delete…
-  </button>
-</div>
-
-<div className="hr" />
-<div className="small muted"><b>Status filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-  {THREAT_STATUSES.map((s) => (
-    <label key={"st-"+s} className="row" style={{ gap: 6, alignItems: "center" }}>
-      <input
-        type="checkbox"
-        checked={(threatStatusFilter || []).includes(s)}
-        onChange={() => {
-          const on = (threatStatusFilter || []).includes(s);
-          const next = on ? (threatStatusFilter || []).filter((x) => x !== s) : [...(threatStatusFilter || []), s];
-          setThreatStatusFilter(next);
-        }}
-      />
-      <span className="small muted">{s}</span>
-    </label>
-  ))}
-  <button className="btn" onClick={() => setThreatStatusFilter([])}>Clear status</button>
-</div>
-
-<div className="hr" />
-<div className="small muted"><b>Evidence filter</b></div>
-<div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8, alignItems: "center" }}>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "any"} onChange={() => setThreatEvidenceFilter("any")} />
-    <span className="small muted">Any</span>
-  </label>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "no_evidence"} onChange={() => setThreatEvidenceFilter("no_evidence")} />
-    <span className="small muted">No evidence</span>
-  </label>
-  <label className="row" style={{ gap: 6, alignItems: "center" }}>
-    <input type="radio" name="evf" checked={threatEvidenceFilter === "has_verified"} onChange={() => setThreatEvidenceFilter("has_verified")} />
-    <span className="small muted">Has verified evidence</span>
-  </label>
-</div>
-
-
-<div className="list" style={{ marginTop: 8 }}>
-  {FRAMEWORKS.map((fw) => (
-    <label key={"flt-"+fw.id} className="item" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <input
-        type="checkbox"
-        checked={threatFrameworkFilter.includes(fw.id)}
-        onChange={() => {
-          const on = threatFrameworkFilter.includes(fw.id);
-          const next = on ? threatFrameworkFilter.filter((x) => x !== fw.id) : [...threatFrameworkFilter, fw.id];
-          setThreatFrameworkFilter(next);
-        }}
-      />
-      <div className="small muted">{fw.name}</div>
-    </label>
-  ))}
-  <button className="btn" onClick={() => setThreatFrameworkFilter([])}>Clear filter</button>
-            <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear risk</button>
-            <div className="hr" />
-            <div className="small muted"><b>Bulk actions</b></div>
-            <div className="row" style={{gap:8, flexWrap:"wrap", marginTop:8}}>
-              <button className="btn" onClick={() => {
-                const v = prompt("Set status for filtered threats (open, in_analysis, mitigated, accepted, verified, rejected):") || "";
-                if (!v.trim()) return;
-                const st = useTMStore.getState();
-                st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { status: v.trim() as any });
-              }}>Set status</button>
-              <button className="btn" onClick={() => {
-                const v = prompt("Set owner for filtered threats:") || "";
-                const st = useTMStore.getState();
-                st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { owner: v });
-              }}>Set owner</button>
-              <button className="btn" onClick={() => {
-                const l = Number(prompt("Set likelihood (1-5):") || "");
-                const i = Number(prompt("Set impact (1-5):") || "");
-                if (!l && !i) return;
-                const st = useTMStore.getState();
-                st.commitHistory();
-                for (const t of (threats as any[])) st.updateThreat(t.id, { ...(l?{likelihood:l}:{}), ...(i?{impact:i}:{}) } as any);
-              }}>Set L/I</button>
-              <button className="btn" onClick={() => {
-                if (!confirm(`Delete ${threats.length} filtered threats?`)) return;
-                const st = useTMStore.getState();
-                st.commitHistory();
-                for (const t of (threats as any[])) st.deleteThreat(t.id);
-              }}>Delete</button>
-            </div>
-            <div className="hr" />
-            <div className="small muted"><b>Group by</b></div>
-            <div className="row" style={{gap:8, flexWrap:"wrap", marginTop:8}}>
-              <select className="select" value={groupBy} onChange={(e) => setGroupBy(e.target.value as any)}>
-                <option value="none">none</option>
-                <option value="framework">framework</option>
-                <option value="status">status</option>
-                <option value="owner">owner</option>
-              </select>
-              <button className="btn" onClick={() => setCollapsedGroups({})}>Expand all</button>
-            </div>
-</div>
-
-          <div className="list">
+          <div className="list" style={{ marginTop: 10 }}>
             {findings.length > 60 ? (
-            <div style={{ height: 700 }}>
-              <VirtualList
-                items={findings}
-                rowHeight={260}
-                overscan={6}
-                renderRow={(f: any) => (
-                  <div className="card">
-
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <div className="row">
-                    <Pill text={f.status} />
-                    <b>{f.title}</b>
-                  </div>
-                  <button className="btn" onClick={() => deleteFinding(f.id)}>
-                    Delete
-                  </button>
-                </div>
-
-                <div className="kv">
-                  <div>
-                    <label className="small muted">Status</label>
-                    <select
-                      className="select"
-                      value={f.status}
-                      onChange={(e) => updateFinding(f.id, { status: e.target.value as FindingStatus })}
-                    >
-                      {FINDING_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>        </div>
-      )}
-    />
-  </div>
-) : (
-{findings.map((f) => (
-              <div key={f.id} className="card">
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <div className="row">
-                    <Pill text={f.status} />
-                    <b>{f.title}</b>
-                  </div>
-                  <button className="btn" onClick={() => deleteFinding(f.id)}>
-                    Delete
-                  </button>
-                </div>
-
-                <div className="kv">
-                  <div>
-                    <label className="small muted">Status</label>
-                    <select
-                      className="select"
-                      value={f.status}
-                      onChange={(e) => updateFinding(f.id, { status: e.target.value as FindingStatus })}
-                    >
-                      {FINDING_STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-          )
-                    </select>
-                  </div>
-                  <div>
-                    <label className="small muted">Owner</label>
-                    <input className="input" value={f.owner || ""} onChange={(e) => updateFinding(f.id, { owner: e.target.value })} />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="small muted">Title</label>
-                  <input className="input" value={f.title} onChange={(e) => updateFinding(f.id, { title: e.target.value })} />
-                </div>
-                <div>
-                  <label className="small muted">Description</label>
-                  <textarea
-                    className="input"
-                    rows={3}
-                    value={f.description || ""}
-                    onChange={(e) => updateFinding(f.id, { description: e.target.value })}
+              <div style={{ height: 700 }}>
+                <VirtualList
+                  items={findings}
+                  rowHeight={260}
+                  overscan={6}
+                  renderRow={(f: any) => (
+                    <div className="card">
+                      <FindingCard
+                        f={f}
+                        deleteFinding={deleteFinding}
+                        updateFinding={updateFinding}
+                        addEvidenceToFinding={addEvidenceToFinding}
+                        updateFindingEvidence={updateFindingEvidence}
+                        addFindingControl={addFindingControl}
+                        updateFindingControl={updateFindingControl}
+                        removeFindingControl={removeFindingControl}
+                        linkFindingToThreat={linkFindingToThreat}
+                        unlinkFindingFromThreat={unlinkFindingFromThreat}
+                      />
+                    </div>
+                  )}
+                />
+              </div>
+            ) : (
+              findings.map((f: any) => (
+                <div key={f.id} className="card">
+                  <FindingCard
+                    f={f}
+                    deleteFinding={deleteFinding}
+                    updateFinding={updateFinding}
+                    addEvidenceToFinding={addEvidenceToFinding}
+                    updateFindingEvidence={updateFindingEvidence}
+                    addFindingControl={addFindingControl}
+                    updateFindingControl={updateFindingControl}
+                    removeFindingControl={removeFindingControl}
+                    linkFindingToThreat={linkFindingToThreat}
+                    unlinkFindingFromThreat={unlinkFindingFromThreat}
                   />
                 </div>
-
-                <div className="hr" />
-
-                <div className="row" style={{ justifyContent: "space-between" }}>
-                  <b>Evidence</b>
-                  <button
-                    className="btn"
-                    onClick={() =>
-                      addEvidenceToFinding(f.id, {
-                        author: "",
-                        note: prompt("Evidence note:") || "",
-                        links: [],
-                        status: "draft" as EvidenceStatus
-                      } as any)
-                    }
-                  >
-                    Add note
-                  </button>
-                </div>
-
-                {(f.evidence || []).length ? (
-                  <div className="list">
-                    {(f.evidence || []).map((ev: any) => (
-                      <div key={ev.id} className="item">
-                        <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
-                          <div className="small muted">
-                            {ev.createdAt} {ev.author ? "• " + ev.author : ""}
-                          </div>
-                          <select
-                            className="select"
-                            style={{ maxWidth: 160 }}
-                            value={(ev.status || "draft") as EvidenceStatus}
-                            onChange={(e) => updateFindingEvidence(f.id, ev.id, { status: e.target.value as EvidenceStatus })}
-                          >
-                            {EVIDENCE_STATUSES.map((s) => (
-                              <option key={s} value={s}>
-                                {s}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>{ev.note}</div>
-                        {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" • ")}</div> : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="small muted">No evidence yet.</div>
-                )}
-
-                <div className="hr" />
-
-                <div>
-                  <div className="row" style={{ justifyContent: "space-between" }}>
-                    <b>Related threats</b>
-                    <button
-                      className="btn"
-                      onClick={() => {
-                        const id = prompt("Threat ID to link (or open Threats tab and copy an ID):") || "";
-                        if (id.trim()) linkFindingToThreat(f.id, id.trim());
-                      }}
-                    >
-                      Link by ID
-                    </button>
-                  </div>
-
-                  {(f.relatedThreatIds || []).length ? (
-                    <div className="list">
-                      {(f.relatedThreatIds || []).map((tid: string) => (
-                        <div key={tid} className="item">
-                          <div className="row" style={{ justifyContent: "space-between" }}>
-                            <div className="small muted">{tid}</div>
-                            <button className="btn" onClick={() => unlinkFindingFromThreat(f.id, tid)}>
-                              Unlink
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="small muted">No related threats linked yet.</div>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </>
       )}
 
       {tab === "dashboard" && (
-  <>
-    <div className="card">
-      <div className="cardTitle">Risk heatmap</div>
-      <div className="small muted">Click a cell to filter threats by Likelihood × Impact (soft enterprise palette).</div>
-
-      <div style={{ marginTop: 12 }}>
-        <div className="heatmap">
-          {Array.from({ length: 5 }).map((_, iRow) => {
-            const impact = 5 - iRow;
-            return (
-              <div key={"r"+impact} className="heatmapRow">
-                {Array.from({ length: 5 }).map((__, iCol) => {
-                  const likelihood = iCol + 1;
-                  const score = likelihood * impact;
-                  const count = threatsAll.filter((t:any)=> Number(t.likelihood)===likelihood && Number(t.impact)===impact).length;
-                  const selected = threatRiskCell && threatRiskCell.likelihood===likelihood && threatRiskCell.impact===impact;
-                  const cls =
-                    score >= 20 ? "h5" :
-                    score >= 16 ? "h4" :
-                    score >= 12 ? "h3" :
-                    score >= 8 ? "h2" : "h1";
-                  return (
-                    <button
-                      key={"c"+likelihood}
-                      className={"heatCell "+cls + (selected ? " heatSel" : "")}
-                      onClick={() => setThreatRiskCell(selected ? null : { likelihood, impact })}
-                      title={`L${likelihood} × I${impact} (${count} threats)`}
-                    >
-                      <div className="small"><b>{count}</b></div>
-                      <div className="tiny muted">L{likelihood}/I{impact}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            );
-          })}
-        </div>
-        <div className="row" style={{ justifyContent:"space-between", marginTop: 8 }}>
-          <div className="small muted">Selected: {threatRiskCell ? `L${threatRiskCell.likelihood}/I${threatRiskCell.impact}` : "None"}</div>
-          <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear</button>
-        </div>
-      </div>
-    </div>
-
-    <div className="card">
-      <div className="cardTitle">Control coverage</div>
-      <div className="small muted">Shows how compensating controls on findings cover linked threats (best-effort).</div>
-
-      {(() => {
-        const byCat: Record<string, { threats: Set<string>; partial: number; complete: number; unknown: number }> = {};
-        for (const f of findings as any[]) {
-          const controls = (f.compensatingControls || []) as any[];
-          const linkedThreats = new Set<string>((f.threatIds || f.threatIds || f.linkedThreatIds || []) as any);
-          // fallback: threats with this finding id
-          for (const t of threatsAll as any[]) {
-            if ((t.findingIds || []).includes(f.id)) linkedThreats.add(t.id);
-          }
-          for (const c of controls) {
-            const cat = c.category || "OTHER";
-            if (!byCat[cat]) byCat[cat] = { threats: new Set(), partial: 0, complete: 0, unknown: 0 };
-            for (const tid of linkedThreats) byCat[cat].threats.add(tid);
-            const cov = c.coverage || "partial";
-            if (cov === "complete") byCat[cat].complete += 1;
-            else if (cov === "unknown") byCat[cat].unknown += 1;
-            else byCat[cat].partial += 1;
-          }
-        }
-
-        const rows = Object.entries(byCat).sort((a,b)=> b[1].threats.size - a[1].threats.size);
-        if (!rows.length) return <div className="small muted">No controls recorded yet. Add compensating controls to findings to populate this view.</div>;
-
-        return (
-          <table className="table" style={{ marginTop: 10 }}>
-            <thead>
-              <tr>
-                <th>Control</th>
-                <th>Threats covered</th>
-                <th>Partial</th>
-                <th>Complete</th>
-                <th>Unknown</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map(([cat, v]) => (
-                <tr key={cat}>
-                  <td><b>{cat}</b></td>
-                  <td>{v.threats.size}</td>
-                  <td>{v.partial}</td>
-                  <td>{v.complete}</td>
-                  <td>{v.unknown}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        );
-      })()}
-    </div>
-  </>
-)}
+        <Dashboard
+          threatsAll={threatsAll}
+          threatRiskCell={threatRiskCell}
+          setThreatRiskCell={setThreatRiskCell}
+          findings={findings}
+        />
+      )}
 
       {tab === "validation" && (
         <div className="card">
           <div className="cardTitle">Validation</div>
-          <div className="small muted">
-            Tips and checks to keep the model audit-friendly. These are warnings, not blockers.
-          </div>
+          <div className="small muted">Tips and checks to keep the model audit-friendly. These are warnings, not blockers.</div>
           <div className="hr" />
           {(issues || []).length ? (
             <div className="list">
@@ -1408,67 +858,429 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
         </div>
       )}
 
-      {tab === "help" && (
-        <div className="card">
-          <div className="cardTitle">How to use</div>
-          <div className="small muted">
-            Friendly, enterprise-ready threat modeling. Everything runs locally in your browser — no backend required.
-          </div>
+      {tab === "help" && <HelpCard />}
+    </div>
+  );
+}
+function FindingCard({
+  f,
+  deleteFinding,
+  updateFinding,
+  addEvidenceToFinding,
+  updateFindingEvidence,
+  addFindingControl,
+  updateFindingControl,
+  removeFindingControl,
+  linkFindingToThreat,
+  unlinkFindingFromThreat
+}: any) {
+  return (
+    <>
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <div className="row" style={{ gap: 8, alignItems: "center" }}>
+          <Pill text={f.status} />
+          <b>{f.title}</b>
+        </div>
+        <button className="btn" onClick={() => deleteFinding(f.id)}>
+          Delete
+        </button>
+      </div>
 
-          <div className="hr" />
-          <div className="col" style={{ gap: 10 }}>
-            <div>
-              <b>1) Build your diagram</b>
-              <div className="small muted">Drag nodes from the left palette. Connect them with flows. Add trust boundaries to show security zones.</div>
-            </div>
-            <div>
-              <b>2) Add threats</b>
-              <div className="small muted">Use Generate STRIDE, Templates, or right‑click a node/flow to create a threat linked to what it affects.</div>
-            </div>
-            <div>
-              <b>3) Record findings + evidence</b>
-              <div className="small muted">Findings capture issues to fix or formally accept. Evidence notes capture proof (screenshots, logs, links) and can be verified for audit.</div>
-            </div>
-            <div>
-              <b>4) Export for review</b>
-              <div className="small muted">Use Open/Save As to move files. Use Evidence ZIP and Report PDF for reviews and audits.</div>
-            </div>
+      <div className="kv">
+        <div>
+          <label className="small muted">Status</label>
+          <select className="select" value={f.status} onChange={(e) => updateFinding(f.id, { status: e.target.value as FindingStatus })}>
+            {FINDING_STATUSES.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="small muted">Owner</label>
+          <input className="input" value={f.owner || ""} onChange={(e) => updateFinding(f.id, { owner: e.target.value })} />
+        </div>
+      </div>
 
-            <div className="hr" />
+      <div>
+        <label className="small muted">Title</label>
+        <input className="input" value={f.title} onChange={(e) => updateFinding(f.id, { title: e.target.value })} />
+      </div>
+      <div>
+        <label className="small muted">Description</label>
+        <textarea
+          className="input"
+          rows={3}
+          value={f.description || ""}
+          onChange={(e) => updateFinding(f.id, { description: e.target.value })}
+        />
+      </div>
 
-            <div>
-              <b>Status guidance</b>
-              <div className="small muted">
-                • Threats: open → in_analysis → mitigated/accepted → verified (or rejected)<br/>
-                • Findings: proposed → in_review → remediation_planned → remediated → verified (or accepted/rejected)<br/>
-                • Evidence: draft → submitted → reviewed → verified (or superseded/rejected)
+      <div className="hr" />
+
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <b>Evidence</b>
+        <button
+          className="btn"
+          onClick={() =>
+            addEvidenceToFinding(f.id, {
+              author: "",
+              note: prompt("Evidence note:") || "",
+              links: [],
+              status: "draft" as EvidenceStatus
+            } as any)
+          }
+        >
+          Add note
+        </button>
+      </div>
+
+      {(f.evidence || []).length ? (
+        <div className="list">
+          {(f.evidence || []).map((ev: any) => (
+            <div key={ev.id} className="item">
+              <div className="row" style={{ justifyContent: "space-between", alignItems: "center" }}>
+                <div className="small muted">
+                  {ev.createdAt} {ev.author ? "- " + ev.author : ""}
+                </div>
+                <select
+                  className="select"
+                  style={{ maxWidth: 160 }}
+                  value={(ev.status || "draft") as EvidenceStatus}
+                  onChange={(e) => updateFindingEvidence(f.id, ev.id, { status: e.target.value as EvidenceStatus })}
+                >
+                  {EVIDENCE_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>{ev.note}</div>
+              {(ev.links || []).length ? <div className="small muted">{(ev.links || []).join(" | ")}</div> : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="small muted">No evidence yet.</div>
+      )}
+
+      <div className="hr" />
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <b>Compensating controls</b>
+        <button
+          className="btn"
+          onClick={() => {
+            const cat = CONTROL_CATEGORIES[0];
+            const vendor = cat.vendors[0];
+            addFindingControl(f.id, {
+              id: crypto.randomUUID(),
+              category: cat.id,
+              vendor: vendor?.name || "",
+              providedControl: vendor?.notes || "",
+              coverage: "partial",
+              notes: ""
+            });
+          }}
+        >
+          Add control
+        </button>
+      </div>
+
+      {(f.compensatingControls || []).length ? (
+        <div className="list" style={{ marginTop: 8 }}>
+          {(f.compensatingControls || []).map((c: any) => {
+            const cat = CONTROL_CATEGORIES.find((x) => x.id === c.category) || CONTROL_CATEGORIES[0];
+            const vendors = cat.vendors || [];
+            return (
+              <div key={c.id} className="card">
+                <div className="row" style={{ justifyContent: "space-between" }}>
+                  <div className="row" style={{ gap: 8, alignItems: "center" }}>
+                    <span className="badge">{cat.id}</span>
+                    <b>{c.vendor}</b>
+                  </div>
+                  <button className="btn" onClick={() => removeFindingControl(f.id, c.id)}>Remove</button>
+                </div>
+
+                <div className="kv">
+                  <div>
+                    <label className="small muted">Category</label>
+                    <select
+                      className="select"
+                      value={c.category}
+                      onChange={(e) => {
+                        const nextCat = e.target.value;
+                        const cat2 = CONTROL_CATEGORIES.find((x) => x.id === nextCat) || CONTROL_CATEGORIES[0];
+                        const v0 = cat2.vendors[0];
+                        updateFindingControl(f.id, c.id, {
+                          category: cat2.id,
+                          vendor: v0 ? v0.name : "",
+                          providedControl: v0 ? v0.notes : ""
+                        });
+                      }}
+                    >
+                      {CONTROL_CATEGORIES.map((cc) => (
+                        <option key={cc.id} value={cc.id}>
+                          {cc.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="small muted">Vendor</label>
+                    <select
+                      className="select"
+                      value={c.vendor}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const vend = vendors.find((vv) => vv.name === v);
+                        updateFindingControl(f.id, c.id, { vendor: v, providedControl: vend ? vend.notes : c.providedControl });
+                      }}
+                    >
+                      {vendors.map((vv) => (
+                        <option key={vv.name} value={vv.name}>
+                          {vv.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="small muted">Coverage</label>
+                    <select className="select" value={c.coverage || "partial"} onChange={(e) => updateFindingControl(f.id, c.id, { coverage: e.target.value })}>
+                      <option value="partial">partial</option>
+                      <option value="complete">complete</option>
+                      <option value="unknown">unknown</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="small muted">What it provides</label>
+                  <textarea
+                    className="input"
+                    rows={2}
+                    value={c.providedControl || ""}
+                    onChange={(e) => updateFindingControl(f.id, c.id, { providedControl: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <label className="small muted">Commentary</label>
+                  <textarea
+                    className="input"
+                    rows={2}
+                    value={c.notes || ""}
+                    onChange={(e) => updateFindingControl(f.id, c.id, { notes: e.target.value })}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="small muted">No compensating controls recorded yet.</div>
+      )}
+
+      <div className="hr" />
+      <div className="row" style={{ justifyContent: "space-between" }}>
+        <b>Related threats</b>
+        <button
+          className="btn"
+          onClick={() => {
+            const id = prompt("Threat ID to link (or open Threats tab and copy an ID):") || "";
+            if (id.trim()) linkFindingToThreat(f.id, id.trim());
+          }}
+        >
+          Link by ID
+        </button>
+      </div>
+
+      {(f.relatedThreatIds || []).length ? (
+        <div className="list">
+          {(f.relatedThreatIds || []).map((tid: string) => (
+            <div key={tid} className="item">
+              <div className="row" style={{ justifyContent: "space-between" }}>
+                <div className="small muted">{tid}</div>
+                <button className="btn" onClick={() => unlinkFindingFromThreat(f.id, tid)}>Unlink</button>
               </div>
             </div>
+          ))}
+        </div>
+      ) : (
+        <div className="small muted">No related threats linked yet.</div>
+      )}
+    </>
+  );
+}
+function Dashboard({ threatsAll, threatRiskCell, setThreatRiskCell, findings }: any) {
+  return (
+    <div className="card" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div className="cardTitle">Dashboard</div>
+      <div className="small muted">Risk heatmap and control coverage.</div>
 
-            <div className="hr" />
-
-            <div>
-              <b>Keyboard shortcuts
-
-- Ctrl/Cmd + K: Command palette
-- Ctrl/Cmd + /: Global search
-- P: Presentation mode
-- ?: Open Help tab
-- Esc: Close dialogs
-</b>
-              <div className="small muted">Ctrl on Windows/Linux • Cmd on macOS • Press <span className="badge">?</span> to view the full list</div>
-            </div>
-
-            <div className="hr" />
-
-            <div>
-              <b>Example screenshots</b>
-              <div className="small muted">Sample views to help onboard new users.</div>
-              <img src="/example-screens.png" style={{ width: "100%", borderRadius: 12, border: "1px solid var(--border)" }} />
-            </div>
+      <div className="card" style={{ marginTop: 8 }}>
+        <div className="cardTitle">Risk heatmap</div>
+        <div className="small muted">Click a cell to filter threats by likelihood and impact.</div>
+        <div style={{ marginTop: 12 }}>
+          <div className="heatmap">
+            {Array.from({ length: 5 }).map((_, iRow) => {
+              const impact = 5 - iRow;
+              return (
+                <div key={"r" + impact} className="heatmapRow">
+                  {Array.from({ length: 5 }).map((__, iCol) => {
+                    const likelihood = iCol + 1;
+                    const count = threatsAll.filter((t: any) => Number(t.likelihood) === likelihood && Number(t.impact) === impact).length;
+                    const selected = threatRiskCell && threatRiskCell.likelihood === likelihood && threatRiskCell.impact === impact;
+                    const score = likelihood * impact;
+                    const cls = score >= 20 ? "h5" : score >= 16 ? "h4" : score >= 12 ? "h3" : score >= 8 ? "h2" : "h1";
+                    return (
+                      <button
+                        key={"c" + likelihood}
+                        className={"heatCell " + cls + (selected ? " heatSel" : "")}
+                        onClick={() => setThreatRiskCell(selected ? null : { likelihood, impact })}
+                        title={`L${likelihood} / I${impact} (${count} threats)`}
+                      >
+                        <div className="small">
+                          <b>{count}</b>
+                        </div>
+                        <div className="tiny muted">L{likelihood}/I{impact}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+          <div className="row" style={{ justifyContent: "space-between", marginTop: 8 }}>
+            <div className="small muted">Selected: {threatRiskCell ? `L${threatRiskCell.likelihood}/I${threatRiskCell.impact}` : "None"}</div>
+            <button className="btn" onClick={() => setThreatRiskCell(null)}>Clear</button>
           </div>
         </div>
-      )}
+      </div>
+
+      <div className="card">
+        <div className="cardTitle">Control coverage</div>
+        <div className="small muted">Shows how compensating controls on findings cover linked threats.</div>
+
+        {(() => {
+          const byCat: Record<string, { threats: Set<string>; partial: number; complete: number; unknown: number }> = {};
+          for (const f of findings as any[]) {
+            const controls = (f.compensatingControls || []) as any[];
+            const linkedThreats = new Set<string>((f.threatIds || f.linkedThreatIds || []) as any);
+            for (const t of threatsAll as any[]) {
+              if ((t.findingIds || []).includes(f.id)) linkedThreats.add(t.id);
+            }
+            for (const c of controls) {
+              const cat = c.category || "OTHER";
+              if (!byCat[cat]) byCat[cat] = { threats: new Set(), partial: 0, complete: 0, unknown: 0 };
+              for (const tid of linkedThreats) byCat[cat].threats.add(tid);
+              const cov = c.coverage || "partial";
+              if (cov === "complete") byCat[cat].complete += 1;
+              else if (cov === "unknown") byCat[cat].unknown += 1;
+              else byCat[cat].partial += 1;
+            }
+          }
+
+          const rows = Object.entries(byCat).sort((a, b) => b[1].threats.size - a[1].threats.size);
+          if (!rows.length) {
+            return <div className="small muted">No controls recorded yet. Add compensating controls to findings to populate this view.</div>;
+          }
+
+          return (
+            <table className="table" style={{ marginTop: 10 }}>
+              <thead>
+                <tr>
+                  <th>Control</th>
+                  <th>Threats covered</th>
+                  <th>Partial</th>
+                  <th>Complete</th>
+                  <th>Unknown</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map(([cat, v]) => (
+                  <tr key={cat}>
+                    <td>
+                      <b>{cat}</b>
+                    </td>
+                    <td>{v.threats.size}</td>
+                    <td>{v.partial}</td>
+                    <td>{v.complete}</td>
+                    <td>{v.unknown}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          );
+        })()}
+      </div>
+    </div>
+  );
+}
+
+function HelpCard() {
+  return (
+    <div className="card">
+      <div className="cardTitle">How to use</div>
+      <div className="small muted">Everything runs locally in your browser. No backend required.</div>
+
+      <div className="hr" />
+      <div className="col" style={{ gap: 10 }}>
+        <div>
+          <b>1) Build your diagram</b>
+          <div className="small muted">Drag nodes from the left palette. Connect them with flows. Add trust boundaries to show security zones.</div>
+        </div>
+        <div>
+          <b>2) Add threats</b>
+          <div className="small muted">Use Generate STRIDE, Templates, or right-click a node/flow to create a threat linked to what it affects.</div>
+        </div>
+        <div>
+          <b>3) Record findings + evidence</b>
+          <div className="small muted">Findings capture issues to fix or formally accept. Evidence notes capture proof and can be verified for audit.</div>
+        </div>
+        <div>
+          <b>4) Export for review</b>
+          <div className="small muted">Use Open/Save As to move files. Use Evidence ZIP and Report PDF for reviews and audits.</div>
+        </div>
+
+        <div className="hr" />
+
+        <div>
+          <b>Status guidance</b>
+          <div className="small muted">
+            Threats: open -> in_analysis -> mitigated/accepted -> verified (or rejected)
+            <br />
+            Findings: proposed -> in_review -> remediation_planned -> remediated -> verified (or accepted/rejected)
+            <br />
+            Evidence: draft -> submitted -> reviewed -> verified (or superseded/rejected)
+          </div>
+        </div>
+
+        <div className="hr" />
+
+        <div>
+          <b>Keyboard shortcuts</b>
+          <div className="small muted">
+            - Ctrl/Cmd + K: Command palette
+            <br />
+            - Ctrl/Cmd + /: Global search
+            <br />
+            - P: Presentation mode
+            <br />
+            - ?: Open Help tab
+            <br />
+            - Esc: Close dialogs
+          </div>
+        </div>
+
+        <div className="hr" />
+
+        <div>
+          <b>Example screenshots</b>
+          <div className="small muted">Sample views to help onboard new users.</div>
+          <img src="/example-screens.png" style={{ width: "100%", borderRadius: 12, border: "1px solid var(--border)" }} />
+        </div>
+      </div>
     </div>
   );
 }
