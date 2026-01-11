@@ -16,6 +16,10 @@
 
 Designed for security teams operating in restricted or high-sensitivity environments, ThreatCanvas runs entirely in the browser and can be hosted as a static website.
 
+## Demo
+
+Live app: https://brickbross.github.io/ThreatCanvas/
+
 ---
 
 ## Highlights
