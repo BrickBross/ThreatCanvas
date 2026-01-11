@@ -532,7 +532,6 @@ export function RightPanel({ onOpenSnapshots }: { onOpenSnapshots: () => void })
               </div>
             </div>
           </div>
-          </div>
 
           <div className="card">
             <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
