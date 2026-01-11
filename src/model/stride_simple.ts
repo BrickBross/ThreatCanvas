@@ -158,3 +158,146 @@ export function generateStride(model: TMModel): Threat[] {
 
   return threats;
 }
+
+const STRIDE_AUTO_PREFIX = "STRIDE_AUTO";
+
+function pushAuto(out: Threat[], ref: string, t: Omit<Threat, "id">) {
+  out.push({
+    ...t,
+    id: `${STRIDE_AUTO_PREFIX}:${ref}`,
+    framework: "STRIDE",
+    frameworkCategory: "Auto",
+    frameworkRef: `${STRIDE_AUTO_PREFIX}:${ref}`
+  });
+}
+
+export function generateStrideAuto(model: TMModel): Threat[] {
+  const nodes = model.nodes as TMNode[];
+  const edges = model.edges as TMEdge[];
+  const threats: Threat[] = [];
+
+  const boundaryNodes = nodes.filter((n) => n.data?.kind === "trustBoundary");
+  const boundaries = boundaryNodes.map(getRect).filter(Boolean) as Rect[];
+
+  const boundaryOf = new Map<string, string | null>();
+  for (const n of nodes) {
+    if (n.data?.kind === "trustBoundary") continue;
+    boundaryOf.set(n.id, boundaryForNode(n, boundaries));
+  }
+
+  for (const n of nodes) {
+    if (n.data?.kind === "trustBoundary") continue;
+    const label = n.data?.label || "component";
+    const p = n.data?.props || {};
+
+    if (p.internetExposed && !p.authRequired) {
+      pushAuto(threats, `S:unauth:${n.id}`, {
+        stride: "S",
+        title: `Unauthenticated access to ${label}`,
+        description: `${label} is Internet-exposed but not marked as requiring auth.`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 4,
+        impact: 4,
+        status: "open",
+        mitigation: "Require strong authentication/authorization; consider WAF and rate limits.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    if (p.dataClassification === "Restricted" && !p.loggingEnabled) {
+      pushAuto(threats, `R:logging:${n.id}`, {
+        stride: "R",
+        title: `Insufficient logging for ${label}`,
+        description: `${label} handles restricted data but logging is not enabled (may hinder investigations).`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 3,
+        impact: 3,
+        status: "open",
+        mitigation: "Enable audit logs and forward to SIEM; define retention and alerting.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    if (n.data?.kind === "datastore" && p.encryptionAtRest !== true) {
+      pushAuto(threats, `I:encAtRest:${n.id}`, {
+        stride: "I",
+        title: `Unencrypted data at rest in ${label}`,
+        description: `Datastore "${label}" is not marked encrypted at rest.`,
+        affectedNodeIds: [n.id],
+        affectedEdgeIds: [],
+        likelihood: 3,
+        impact: 4,
+        status: "open",
+        mitigation: "Enable encryption at rest (KMS/Key Vault), rotate keys, restrict access.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+  }
+
+  for (const e of edges) {
+    const dp = e.data?.props || {};
+    const name = e.data?.label || "flow";
+
+    if (dp.encryptionInTransit !== true) {
+      pushAuto(threats, `I:tls:${e.id}`, {
+        stride: "I",
+        title: `Unencrypted data in transit on ${name}`,
+        description: `The data flow "${name}" is not marked as encrypted in transit.`,
+        affectedNodeIds: [],
+        affectedEdgeIds: [e.id],
+        likelihood: 4,
+        impact: 4,
+        status: "open",
+        mitigation: "Use TLS/mTLS; enforce HTTPS-only; validate certs; consider private connectivity.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+    if (dp.authOnFlow !== true) {
+      pushAuto(threats, `S:authOnFlow:${e.id}`, {
+        stride: "S",
+        title: `Flow spoofing risk on ${name}`,
+        description: `The data flow "${name}" is not marked as authenticated (mTLS, signed tokens, etc.).`,
+        affectedNodeIds: [],
+        affectedEdgeIds: [e.id],
+        likelihood: 3,
+        impact: 3,
+        status: "open",
+        mitigation: "Authenticate producers/consumers; use mTLS or signed tokens; lock down network paths.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+
+    const sb = boundaryOf.get(e.source) || null;
+    const tb = boundaryOf.get(e.target) || null;
+    if (sb !== tb) {
+      pushAuto(threats, `T:boundary:${e.id}`, {
+        stride: "T",
+        title: `Trust boundary crossing on ${name}`,
+        description: `Data flow "${name}" crosses a trust boundary (source boundary: ${sb || "none"}, target boundary: ${tb || "none"}).`,
+        affectedNodeIds: [e.source, e.target].filter(Boolean) as any,
+        affectedEdgeIds: [e.id],
+        likelihood: 3,
+        impact: 4,
+        status: "open",
+        mitigation: "Validate boundary controls: network policy, authn/z, mTLS, input validation, logging, rate limits.",
+        owner: "",
+        commentary: [],
+        findingIds: []
+      });
+    }
+  }
+
+  return threats;
+}

@@ -78,6 +78,8 @@ type Store = {
   updateFindingEvidence: (findingId: string, evidenceId: string, patch: any) => void;
   theme: "light" | "dark";
   setTheme: (t: "light" | "dark") => void;
+  autoStrideEnabled: boolean;
+  setAutoStrideEnabled: (v: boolean) => void;
 
   // project ops
   loadWorkspace: () => Promise<void>;
@@ -319,7 +321,9 @@ export const useTMStore = create<Store>((set, get) => ({
   setLastFileName: (n) => set(() => ({ lastFileName: n })),
   loadModel: (m) => set(() => ({ model: m, isDirty: false })),
   theme: ((localStorage.getItem("tm_theme") as any) || "light"),
-    setTheme: (t) => set(() => { localStorage.setItem("tm_theme", t); return { theme: t }; }),
+  setTheme: (t) => set(() => { localStorage.setItem("tm_theme", t); return { theme: t }; }),
+  autoStrideEnabled: JSON.parse(localStorage.getItem("tm_auto_stride") || "false"),
+  setAutoStrideEnabled: (v) => set(() => { localStorage.setItem("tm_auto_stride", JSON.stringify(v)); return { autoStrideEnabled: v } as any; }),
 duplicateNode: (id) => set((s) => {
   const n: any = s.model.nodes.find((x: any) => x.id === id);
   if (!n) return s as any;

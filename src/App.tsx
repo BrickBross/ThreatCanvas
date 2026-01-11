@@ -24,7 +24,7 @@ import { TrustBoundaryNode } from "./ui/TrustBoundaryNode";
 import EdgeView from "./ui/EdgeView";
 import { useTMStore, TMNode, TMEdge } from "./model/store";
 import { Modal } from "./ui/Modal";
-import { generateStride } from "./model/stride_simple";
+import { generateStride, generateStrideAuto } from "./model/stride_simple";
 import { exportCsv, exportDiagramPng, exportDiagramSvg, exportEvidencePackHtml, exportHtmlReport, exportMarkdown } from "./model/exporters";
 import { SERVICE_CATALOG } from "./model/catalog";
 import type { NodeKind } from "./model/types";
@@ -73,6 +73,8 @@ export default function App() {
   const model = useTMStore((s) => s.model);
   const theme = useTMStore((s) => (s as any).theme);
   const setTheme = useTMStore((s) => (s as any).setTheme);
+  const autoStrideEnabled = useTMStore((s) => (s as any).autoStrideEnabled);
+  const setAutoStrideEnabled = useTMStore((s) => (s as any).setAutoStrideEnabled);
   const isDirty = useTMStore((s) => (s as any).isDirty);
   const lastFileName = useTMStore((s) => (s as any).lastFileName);
   const loadModel = useTMStore((s) => (s as any).loadModel);
@@ -119,6 +121,20 @@ export default function App() {
     document.body.classList.remove("themeLight", "themeDark");
     document.body.classList.add(theme === "dark" ? "themeDark" : "themeLight");
   }, [theme]);
+
+  useEffect(() => {
+    if (!autoStrideEnabled) return;
+    const t = window.setTimeout(() => {
+      const st = useTMStore.getState() as any;
+      const m = st.model as any;
+      const existing = new Set((m.threats || []).map((x: any) => x.frameworkRef).filter(Boolean));
+      const generated = generateStrideAuto(m);
+      const toAdd = generated.filter((x: any) => x.frameworkRef && !existing.has(x.frameworkRef));
+      if (!toAdd.length) return;
+      st.setThreats([...(m.threats || []), ...toAdd]);
+    }, 200);
+    return () => window.clearTimeout(t);
+  }, [autoStrideEnabled, model.nodes, model.edges]);
 
   const onOpenClick = () => fileInputRef.current?.click();
   const onFilePicked = async (f?: File | null) => {
@@ -409,6 +425,19 @@ useEffect(() => {
       // reactflow applyChanges requires helper; do minimal handling
       if (ch.type === "remove") return acc.filter(n => n.id !== ch.id);
       if (ch.type === "position" && ch.position) return acc.map(n => n.id === ch.id ? { ...n, position: ch.position } : n);
+      if (ch.type === "dimensions" && (ch as any).dimensions) {
+        const d = (ch as any).dimensions as { width: number; height: number };
+        return acc.map((n: any) =>
+          n.id === (ch as any).id
+            ? {
+                ...n,
+                width: d.width,
+                height: d.height,
+                style: { ...(n.style || {}), width: d.width, height: d.height }
+              }
+            : n
+        );
+      }
       if (ch.type === "select") return acc.map(n => n.id === ch.id ? { ...n, selected: ch.selected } : { ...n, selected: false });
       return acc;
     }, nodes);
@@ -482,6 +511,12 @@ useEffect(() => {
 <button className="btn" onClick={onSaveAs}>Save As</button>
 
 <button className="btn" onClick={() => setTemplatesOpen(true)}>Templates</button>
+<button className="btn" onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
+  Theme: {theme === "dark" ? "Dark" : "Light"}
+</button>
+<button className="btn" title="Automatically add STRIDE findings as you model" onClick={() => setAutoStrideEnabled(!autoStrideEnabled)}>
+  Auto STRIDE: {autoStrideEnabled ? "On" : "Off"}
+</button>
 <button className="btn" onClick={onExportReport}>Report PDF</button>
 <button className="btn" title="Redact labels in exports" onClick={() => setRedactExport(!redactExport)}>
   Redact: {redactExport ? "on" : "off"}

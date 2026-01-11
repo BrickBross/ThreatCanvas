@@ -136,10 +136,34 @@ label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 10px;
-  background: rgba(255,255,255,0.75);
+  background: var(--card);
 }
 .paletteSection summary { font-weight: 600; }
 .paletteSection .list .item { background: var(--card); }
+
+/* Service icon */
+.serviceIcon{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--btnBg);
+}
+.serviceName{ display:none; }
+
+/* Nodes */
+.nodeCard { position: relative; min-width: 160px; }
+.nodeTitle{
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 170px;
+}
+.themeDark .serviceIcon{ border-color: var(--border2); }
+.themeDark .card{ box-shadow: 0 10px 30px rgba(0,0,0,0.18); }
 
 .iconBubble{width:26px;height:26px;border:1px solid #e5e5e5;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#111}
 .iconBubble svg{width:16px;height:16px}
